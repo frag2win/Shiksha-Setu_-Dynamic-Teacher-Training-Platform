@@ -36,9 +36,86 @@ All product requirements and technical specifications are available in the `/PRD
 - Split-screen comparison interface
 - PDF viewer integration
 
+## Prerequisites
+
+Before starting, ensure you have the following installed:
+- **Python 3.10+** (for backend)
+- **Node.js 18+** (for frontend) - [Download here](https://nodejs.org/)
+- **Git** (for version control)
+
 ## Getting Started
 
-Coming soon - Project setup instructions will be added as development progresses.
+### Backend Setup
+
+1. Navigate to backend folder:
+```powershell
+cd backend
+```
+
+2. Create and activate virtual environment:
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+```
+
+3. Install dependencies:
+```powershell
+pip install -r requirements.txt
+```
+
+4. Set up environment variables:
+```powershell
+copy .env.example .env
+```
+Edit `.env` and add your `GROQ_API_KEY`
+
+5. Run the server:
+```powershell
+python main.py
+```
+
+Backend will be available at http://localhost:8000
+
+### Frontend Setup
+
+1. Navigate to frontend folder:
+```powershell
+cd frontend
+```
+
+2. Install dependencies:
+```powershell
+npm install
+```
+
+3. Run development server:
+```powershell
+npm run dev
+```
+
+Frontend will be available at http://localhost:3000
+
+For Windows-specific issues, see [WINDOWS_SETUP.md](WINDOWS_SETUP.md)
+
+### Quick Start (All Platforms)
+
+Use the provided startup scripts to launch both servers at once:
+
+**Windows (PowerShell):**
+```powershell
+.\start.ps1
+```
+
+**Windows (Command Prompt):**
+```cmd
+start.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x start.sh
+./start.sh
+```
 
 ## Contributing
 

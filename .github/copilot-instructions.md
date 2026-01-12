@@ -21,6 +21,7 @@
 - **The PRD is a living document and must be kept up-to-date**
 - Any architectural decisions, feature additions, or scope changes must be reflected in the PRD
 - Update the version number and changelog when making significant changes
+- **Always update the "Last Updated" date and time when any changes are made to documents**
 - When implementing features, update the corresponding sections in the PRD with:
   - Implementation status
   - Technical decisions made
