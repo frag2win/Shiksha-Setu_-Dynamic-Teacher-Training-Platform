@@ -2,8 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import logging
 
+# Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Import database and routes
+from core.database import init_db
+from api import clusters_router, manuals_router, modules_router, translation_router
 
 app = FastAPI(
     title="Shiksha-Setu API",
@@ -19,12 +32,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers
+app.include_router(clusters_router)
+app.include_router(manuals_router)
+app.include_router(modules_router)
+app.include_router(translation_router)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("Database initialized successfully")
+
 @app.get("/")
 async def root():
     return {
         "message": "Shiksha-Setu API",
         "status": "running",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "endpoints": {
+            "clusters": "/api/clusters",
+            "manuals": "/api/manuals",
+            "translation": "/api/translation",
+            "modules": "/api/modules",
+            "docs": "/docs"
+        }
     }
 
 @app.get("/health")

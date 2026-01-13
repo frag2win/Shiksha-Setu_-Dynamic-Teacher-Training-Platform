@@ -22,6 +22,10 @@
 - Any architectural decisions, feature additions, or scope changes must be reflected in the PRD
 - Update the version number and changelog when making significant changes
 - **Always update the "Last Updated" date and time when any changes are made to documents**
+- **If new features are added outside of the main PRD, the main PRD must be updated with information about what the feature is**
+  - Include a brief description of the feature
+  - Reference the location of detailed specifications
+  - Explain how the feature integrates with existing functionality
 - When implementing features, update the corresponding sections in the PRD with:
   - Implementation status
   - Technical decisions made
@@ -52,6 +56,14 @@
 - Maintain consistency with existing codebase patterns
 - Document technical decisions in appropriate PRD files
 
+### 7. Code File Length Management
+- **When a code file exceeds 400-500 lines, split it into multiple files**
+- Use continuation naming pattern: `filename_part1.py`, `filename_part2.py`, etc.
+- OR use feature-based naming: `filename_core.py`, `filename_utils.py`, `filename_helpers.py`
+- Add clear comments at the top of each file explaining the split and referencing related files
+- Maintain logical separation: group related functionality together
+- Update imports in dependent files accordingly
+
 ---
 
-**Last Updated:** January 12, 2026
+**Last Updated:** January 13, 2026

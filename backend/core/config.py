@@ -3,7 +3,8 @@ from typing import Optional
 
 class Settings(BaseSettings):
     groq_api_key: str
-    google_translate_api_key: Optional[str] = None
+    indictrans2_model_dir: str = "./models/indictrans2"
+    huggingface_token: Optional[str] = None
     database_url: str = "sqlite:///./shiksha_setu.db"
     chroma_persist_directory: str = "./chroma_db"
     environment: str = "development"

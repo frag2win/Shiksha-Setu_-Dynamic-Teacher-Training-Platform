@@ -78,3 +78,13 @@ htmlcov/
 temp/
 tmp/
 uploads/
+
+# ML Models & Cache
+models/
+.cache/
+sentence_transformers/
+torch/
+transformers/
+~/.cache/
+backend/.cache/
+backend/models/
