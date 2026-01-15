@@ -1,5 +1,13 @@
+import sys
+from pathlib import Path
+
+# Add backend directory to Python path
+backend_dir = Path(__file__).parent
+sys.path.insert(0, str(backend_dir))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from dotenv import load_dotenv
 import os
 import logging
@@ -64,6 +72,12 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/favicon.ico")
+async def favicon():
+    # Return empty response to avoid 404 in logs
+    return Response(status_code=204)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Use 127.0.0.1 for local access, or 0.0.0.0 for network access
+    uvicorn.run(app, host="127.0.0.1", port=8000)
