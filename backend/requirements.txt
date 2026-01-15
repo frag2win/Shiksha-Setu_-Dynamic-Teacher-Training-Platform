@@ -10,7 +10,7 @@ python-multipart==0.0.21
 
 # Data Validation
 pydantic==2.12.5
-pydantic-settings==2.7.2
+pydantic-settings==2.7.1
 
 # Database
 sqlalchemy==2.0.39
