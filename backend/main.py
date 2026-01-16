@@ -5,11 +5,17 @@ from pathlib import Path
 backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
 
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 import logging
+
+# PDF Exporting
+from api import exports
+from fastapi.staticfiles import StaticFiles
 
 # Load environment variables
 load_dotenv()
@@ -44,6 +50,13 @@ app.include_router(clusters_router)
 app.include_router(manuals_router)
 app.include_router(modules_router)
 app.include_router(translation_router)
+app.include_router(exports.router)
+
+
+# PDF 
+app.mount("/exports", StaticFiles(directory="exports"), name="exports")
+
+
 
 @app.on_event("startup")
 async def startup_event():
