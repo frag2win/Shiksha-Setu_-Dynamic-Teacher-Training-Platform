@@ -1,10 +1,12 @@
 """
 Translation service using Google Translate (via deep-translator)
 Simple, reliable, and supports all Indian languages
+With proper Unicode normalization for Devanagari and other scripts
 """
 
 from deep_translator import GoogleTranslator
 from typing import List, Dict
+import unicodedata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,6 +36,33 @@ class TranslationService:
     def __init__(self):
         self.supported_languages = list(self.LANGUAGE_CODES.keys())
         logger.info("Translation service initialized with Google Translate")
+    
+    def _normalize_indic_text(self, text: str) -> str:
+        """
+        Normalize Indian language text to prevent character splitting.
+        Uses NFC normalization to keep combined characters together.
+        """
+        if not text:
+            return text
+        
+        # Normalize to NFC (Canonical Composition) - keeps Devanagari/other scripts together
+        normalized = unicodedata.normalize('NFC', text)
+        
+        # Clean up any problematic zero-width characters
+        # Keep ZWJ (needed for conjuncts) but remove others
+        cleaned = ""
+        for char in normalized:
+            code_point = ord(char)
+            # Keep Zero Width Joiner (0x200D) for proper conjuncts
+            if code_point == 0x200D:
+                cleaned += char
+            # Remove problematic zero-width chars
+            elif code_point in (0x200B, 0x200C, 0xFEFF):
+                continue
+            else:
+                cleaned += char
+        
+        return cleaned
     
     def translate(
         self, 
@@ -79,8 +108,11 @@ class TranslationService:
             translator = GoogleTranslator(source=src_code, target=tgt_code)
             translated = translator.translate(text)
             
+            # Normalize the translated text to prevent character splitting
+            normalized = self._normalize_indic_text(translated)
+            
             logger.info(f"Successfully translated text from {source_language} to {target_language}")
-            return translated
+            return normalized
             
         except Exception as e:
             logger.error(f"Translation failed: {str(e)}")

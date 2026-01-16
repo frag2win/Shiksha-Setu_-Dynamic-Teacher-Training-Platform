@@ -113,6 +113,8 @@ export const getModules = (filters = {}) => {
 
 export const getModule = (id) => apiClient.get(`/api/modules/${id}`);
 
+export const getSupportedLanguages = () => apiClient.get('/api/modules/languages');
+
 export const generateModule = (data) => {
   const payload = {
     manual_id: parseInt(data.manual_id),

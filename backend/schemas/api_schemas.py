@@ -46,6 +46,9 @@ class ManualResponse(BaseModel):
     upload_date: datetime
     indexed: bool
     processed: Optional[str] = None
+    detected_language: Optional[str] = None
+    adapted_summary: Optional[str] = None
+    key_points: Optional[list] = None
     
     class Config:
         from_attributes = True

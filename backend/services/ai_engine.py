@@ -1,14 +1,32 @@
 from groq import Groq
 from core.config import settings
 from typing import Dict, Optional
+from services.translation_service import get_translation_service
 import logging
 
 logger = logging.getLogger(__name__)
 
 class AIAdaptationEngine:
+    # Supported languages with native names
+    SUPPORTED_LANGUAGES = {
+        "english": "English",
+        "hindi": "हिंदी (Hindi)",
+        "marathi": "मराठी (Marathi)",
+        "bengali": "বাংলা (Bengali)",
+        "tamil": "தமிழ் (Tamil)",
+        "telugu": "తెలుగు (Telugu)",
+        "gujarati": "ગુજરાતી (Gujarati)",
+        "kannada": "ಕನ್ನಡ (Kannada)",
+        "malayalam": "മലയാളം (Malayalam)",
+        "punjabi": "ਪੰਜਾਬੀ (Punjabi)",
+        "odia": "ଓଡ଼ିଆ (Odia)",
+        "urdu": "اردو (Urdu)"
+    }
+    
     def __init__(self):
         self.client = Groq(api_key=settings.groq_api_key)
         self.model = "llama-3.3-70b-versatile"  # Fast and capable model
+        self.translation_service = get_translation_service()
         
         # System prompt for grounded, policy-safe pedagogy
         self.system_prompt = """You are an expert teacher educator working within the Indian public education system.
@@ -65,20 +83,26 @@ Micro-Learning Module:"""
         
         return prompt
     
+    def get_supported_languages(self) -> Dict[str, str]:
+        """Return list of supported languages with native names"""
+        return self.SUPPORTED_LANGUAGES.copy()
+    
     async def adapt_content(
         self,
         source_content: str,
         cluster_profile: Dict,
         topic: str,
+        target_language: str = "english",
         temperature: float = 0.7
     ) -> Dict[str, str]:
         """
-        Generate adapted pedagogical content
+        Generate adapted pedagogical content and translate to target language
         
         Args:
             source_content: Original manual content
             cluster_profile: Cluster characteristics
             topic: Specific topic to adapt
+            target_language: Target language for the output (hindi, marathi, etc.)
             temperature: Model creativity (0-1)
         
         Returns:
@@ -103,8 +127,23 @@ Micro-Learning Module:"""
             
             adapted_content = response.choices[0].message.content
             
+            # Translate content to target language if not English
+            target_lang = target_language.lower() if target_language else "english"
+            final_content = adapted_content
+            was_translated = False
+            
+            if target_lang != "english" and target_lang in self.SUPPORTED_LANGUAGES:
+                logger.info(f"Translating adapted content to {target_lang}")
+                # Split content into smaller chunks for better translation
+                final_content = self._translate_long_content(adapted_content, target_lang)
+                was_translated = True
+                logger.info(f"Successfully translated content to {target_lang}")
+            
             result = {
-                "adapted_content": adapted_content,
+                "adapted_content": final_content,
+                "original_english_content": adapted_content if was_translated else None,
+                "output_language": target_lang,
+                "was_translated": was_translated,
                 "model": self.model,
                 "tokens_used": response.usage.total_tokens if response.usage else 0,
                 "finish_reason": response.choices[0].finish_reason
@@ -116,6 +155,74 @@ Micro-Learning Module:"""
         except Exception as e:
             logger.error(f"Error adapting content: {str(e)}")
             raise Exception(f"AI adaptation failed: {str(e)}")
+    
+    def _translate_long_content(self, content: str, target_language: str) -> str:
+        """
+        Translate long content by splitting into paragraphs and translating each.
+        Preserves formatting like headings and bullet points.
+        
+        Args:
+            content: The content to translate
+            target_language: Target language code (hindi, marathi, etc.)
+            
+        Returns:
+            Translated content with preserved formatting
+        """
+        if not content:
+            return content
+            
+        # Split by double newlines (paragraphs) to preserve structure
+        paragraphs = content.split('\n\n')
+        translated_paragraphs = []
+        
+        for paragraph in paragraphs:
+            if not paragraph.strip():
+                translated_paragraphs.append(paragraph)
+                continue
+                
+            # Handle single-line vs multi-line paragraphs
+            lines = paragraph.split('\n')
+            translated_lines = []
+            
+            for line in lines:
+                if not line.strip():
+                    translated_lines.append(line)
+                    continue
+                    
+                # Preserve markdown-like formatting (headings, bullets)
+                prefix = ""
+                text_to_translate = line
+                
+                # Check for heading markers
+                if line.startswith('#'):
+                    hash_count = len(line) - len(line.lstrip('#'))
+                    prefix = '#' * hash_count + ' '
+                    text_to_translate = line.lstrip('#').strip()
+                # Check for bullet points
+                elif line.strip().startswith(('- ', '* ', '• ')):
+                    indent = len(line) - len(line.lstrip())
+                    prefix = ' ' * indent + line.strip()[:2]
+                    text_to_translate = line.strip()[2:]
+                # Check for numbered lists
+                elif len(line.strip()) > 2 and line.strip()[0].isdigit() and line.strip()[1] in '.):':
+                    indent = len(line) - len(line.lstrip())
+                    prefix = ' ' * indent + line.strip()[:3]
+                    text_to_translate = line.strip()[3:]
+                
+                # Translate the text portion
+                if text_to_translate.strip():
+                    translated_text = self.translation_service.translate(
+                        text_to_translate.strip(),
+                        target_language=target_language,
+                        source_language="english"
+                    )
+                    translated_lines.append(prefix + translated_text)
+                else:
+                    translated_lines.append(line)
+            
+            translated_paragraphs.append('\n'.join(translated_lines))
+        
+        return '\n\n'.join(translated_paragraphs)
     
     async def validate_safety(self, content: str) -> Dict[str, any]:
         """

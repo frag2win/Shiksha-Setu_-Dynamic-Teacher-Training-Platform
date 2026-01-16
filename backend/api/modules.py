@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 from core.database import get_db
 from models.database_models import Module, Manual, Cluster
@@ -15,6 +15,13 @@ router = APIRouter(prefix="/api/modules", tags=["Modules"])
 
 rag_engine = RAGEngine()
 ai_engine = AIAdaptationEngine()
+
+
+@router.get("/languages", response_model=Dict[str, str])
+async def get_supported_languages():
+    """Get list of supported languages for module generation"""
+    return ai_engine.get_supported_languages()
+
 
 @router.post("/generate", response_model=ModuleResponse, status_code=status.HTTP_201_CREATED)
 async def generate_module(
@@ -69,16 +76,18 @@ async def generate_module(
             "grade_range": cluster.grade_range or "Not specified"
         }
         
-        # Generate adapted content using AI
-        logger.info(f"Generating adapted content for cluster: {cluster.name}")
+        # Determine target language (user preference > cluster default)
+        target_lang = request.target_language or cluster.language or "english"
+        target_lang = target_lang.lower()
+        
+        # Generate adapted content using AI with translation
+        logger.info(f"Generating adapted content for cluster: {cluster.name} in language: {target_lang}")
         adaptation_result = await ai_engine.adapt_content(
             source_content=original_content,
             cluster_profile=cluster_profile,
-            topic=request.topic
+            topic=request.topic,
+            target_language=target_lang
         )
-        
-        # Determine target language
-        target_lang = request.target_language or cluster.language
         
         # Create module record
         module = Module(

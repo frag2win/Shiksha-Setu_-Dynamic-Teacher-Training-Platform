@@ -118,12 +118,89 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+    'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Telugu', 
+    'Noto Sans Gujarati', 'Noto Sans Kannada', 'Noto Sans Malayalam', 'Noto Sans Gurmukhi',
+    'Noto Sans Oriya', sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ================== INDIAN LANGUAGE TEXT SUPPORT ================== */
+/* Proper rendering for Hindi, Marathi, Bengali, Tamil, etc. */
+.indic-text {
+  font-family: 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 
+    'Noto Sans Telugu', 'Noto Sans Gujarati', 'Noto Sans Kannada', 
+    'Noto Sans Malayalam', 'Noto Sans Gurmukhi', 'Noto Sans Oriya', 
+    'Inter', system-ui, sans-serif;
+  /* Prevent character splitting in Indian languages */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  /* Better line height for Devanagari and other scripts */
+  line-height: 1.8;
+  /* Enable proper ligature rendering */
+  font-feature-settings: "liga" 1, "clig" 1, "kern" 1;
+  -webkit-font-feature-settings: "liga" 1, "clig" 1, "kern" 1;
+  /* Ensure proper text rendering */
+  text-rendering: optimizeLegibility;
+  -webkit-text-stroke: 0;
+}
+
+/* Hindi/Marathi (Devanagari) specific */
+:lang(hi), :lang(mr) {
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Kokila', sans-serif;
+  line-height: 1.8;
+}
+
+/* Bengali specific */
+:lang(bn) {
+  font-family: 'Noto Sans Bengali', 'Vrinda', sans-serif;
+  line-height: 1.8;
+}
+
+/* Tamil specific */
+:lang(ta) {
+  font-family: 'Noto Sans Tamil', 'Latha', sans-serif;
+  line-height: 1.8;
+}
+
+/* Telugu specific */
+:lang(te) {
+  font-family: 'Noto Sans Telugu', 'Gautami', sans-serif;
+  line-height: 1.8;
+}
+
+/* Gujarati specific */
+:lang(gu) {
+  font-family: 'Noto Sans Gujarati', 'Shruti', sans-serif;
+  line-height: 1.8;
+}
+
+/* Kannada specific */
+:lang(kn) {
+  font-family: 'Noto Sans Kannada', 'Tunga', sans-serif;
+  line-height: 1.8;
+}
+
+/* Malayalam specific */
+:lang(ml) {
+  font-family: 'Noto Sans Malayalam', 'Kartika', sans-serif;
+  line-height: 1.8;
+}
+
+/* Punjabi (Gurmukhi) specific */
+:lang(pa) {
+  font-family: 'Noto Sans Gurmukhi', 'Raavi', sans-serif;
+  line-height: 1.8;
+}
+
+/* Odia specific */
+:lang(or) {
+  font-family: 'Noto Sans Oriya', 'Kalinga', sans-serif;
+  line-height: 1.8;
 }
 
 /* ================== APP WRAPPER ================== */

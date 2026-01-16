@@ -18,10 +18,11 @@ import {
   AlertCircle,
   Wand2,
   Feather,
+  Languages,
 } from 'lucide-react';
 import { PageTransition, FadeIn, InkReveal } from '../ui/PageTransition';
 import { PageHeader, Alert, LoadingSpinner } from '../ui/SharedComponents';
-import { getClusters, getManuals, generateModule } from '../../services/api';
+import { getClusters, getManuals, generateModule, getSupportedLanguages } from '../../services/api';
 
 // Ink drop animation component
 const InkDrop = ({ delay = 0 }) => {
@@ -124,6 +125,7 @@ const InkText = ({ children, delay = 0 }) => {
 export default function GeneratorPage() {
   const [clusters, setClusters] = useState([]);
   const [manuals, setManuals] = useState([]);
+  const [languages, setLanguages] = useState({});
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generatedModule, setGeneratedModule] = useState(null);
@@ -134,18 +136,31 @@ export default function GeneratorPage() {
     manual_id: '',
     cluster_id: '',
     topic: '',
+    target_language: 'english',
   });
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [clustersData, manualsData] = await Promise.all([
+      const [clustersData, manualsData, languagesData] = await Promise.all([
         getClusters(),
         getManuals(),
+        getSupportedLanguages().catch(() => ({
+          english: 'English',
+          hindi: 'हिंदी (Hindi)',
+          marathi: 'मराठी (Marathi)',
+          bengali: 'বাংলা (Bengali)',
+          tamil: 'தமிழ் (Tamil)',
+          telugu: 'తెలుగు (Telugu)',
+          gujarati: 'ગુજરાતી (Gujarati)',
+          kannada: 'ಕನ್ನಡ (Kannada)',
+          malayalam: 'മലയാളം (Malayalam)',
+        })),
       ]);
       setClusters(clustersData);
       // Only show indexed manuals
       setManuals(manualsData.filter((m) => m.indexed));
+      setLanguages(languagesData);
     } catch (error) {
       setAlert({ type: 'error', message: 'Failed to load data' });
     } finally {
@@ -156,6 +171,19 @@ export default function GeneratorPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Auto-set target language from cluster selection
+  useEffect(() => {
+    if (formData.cluster_id) {
+      const selectedCluster = clusters.find((c) => c.id === parseInt(formData.cluster_id));
+      if (selectedCluster && selectedCluster.language) {
+        const clusterLang = selectedCluster.language.toLowerCase();
+        if (languages[clusterLang]) {
+          setFormData((prev) => ({ ...prev, target_language: clusterLang }));
+        }
+      }
+    }
+  }, [formData.cluster_id, clusters, languages]);
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -347,6 +375,29 @@ export default function GeneratorPage() {
                         </p>
                       </div>
 
+                      {/* Output Language Selector */}
+                      <div className="form-group">
+                        <label className="form-label flex items-center gap-2">
+                          <Languages className="w-4 h-4 text-setu-500" />
+                          Output Language <span className="form-required">*</span>
+                        </label>
+                        <select
+                          className="form-input form-select"
+                          value={formData.target_language}
+                          onChange={(e) => setFormData({ ...formData, target_language: e.target.value })}
+                          required
+                        >
+                          {Object.entries(languages).map(([code, name]) => (
+                            <option key={code} value={code}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="form-hint">
+                          The generated content will be translated to this language
+                        </p>
+                      </div>
+
                       {/* Cluster Preview */}
                       {selectedCluster && (
                         <div className="bg-setu-50 border border-setu-200 rounded-page p-4">
@@ -510,9 +561,17 @@ export default function GeneratorPage() {
                           <CheckCircle className="w-5 h-5" style={{ color: 'var(--success-600)' }} />
                         </motion.div>
                         <div>
-                          <h3 className="text-lg font-medium" style={{ color: 'var(--ink-800)' }}>
-                            {generatedModule.title}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-medium" style={{ color: 'var(--ink-800)' }}>
+                              {generatedModule.title}
+                            </h3>
+                            {generatedModule.language && generatedModule.language !== 'english' && (
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-setu-100 text-setu-700 flex items-center gap-1">
+                                <Languages className="w-3 h-3" />
+                                {languages[generatedModule.language] || generatedModule.language}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm" style={{ color: 'var(--ink-400)' }}>
                             Adapted for {getClusterName(generatedModule.cluster_id)}
                           </p>
@@ -569,13 +628,25 @@ export default function GeneratorPage() {
                         animate={{ scaleX: 1 }}
                         transition={{ delay: 0.6, duration: 0.5 }}
                       />
-                      <div className="split-panel-header">
-                        <Sparkles className="w-4 h-4" />
-                        Adapted Content
+                      <div className="split-panel-header flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          Adapted Content
+                        </div>
+                        {generatedModule.language && generatedModule.language !== 'english' && (
+                          <span className="text-xs px-2 py-0.5 bg-setu-100 text-setu-700 rounded-full">
+                            {languages[generatedModule.language]?.split(' ')[0] || generatedModule.language}
+                          </span>
+                        )}
                       </div>
                       <div className="split-panel-body">
                         <InkText delay={0.7}>
-                          <pre className="prose-content text-sm whitespace-pre-wrap">
+                          <pre 
+                            className={`prose-content text-sm whitespace-pre-wrap ${
+                              generatedModule.language && generatedModule.language !== 'english' ? 'indic-text' : ''
+                            }`}
+                            lang={generatedModule.language || 'en'}
+                          >
                             {generatedModule.adapted_content}
                           </pre>
                         </InkText>

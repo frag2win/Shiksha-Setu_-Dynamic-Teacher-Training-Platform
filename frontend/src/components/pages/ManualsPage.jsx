@@ -19,10 +19,32 @@ import {
   ArrowRight,
   X,
   AlertCircle,
+  Languages,
+  Sparkles,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  BookMarked,
 } from 'lucide-react';
 import { PageTransition, FadeIn, listContainerVariants, listItemVariants } from '../ui/PageTransition';
 import { PageHeader, Modal, Alert, EmptyState, ConfirmDialog, Badge, StatCard, LoadingSpinner } from '../ui/SharedComponents';
 import { getManuals, uploadManual, indexManual, deleteManual } from '../../services/api';
+
+// Language display names with native script
+const LANGUAGE_DISPLAY = {
+  hindi: 'हिंदी (Hindi)',
+  marathi: 'मराठी (Marathi)',
+  bengali: 'বাংলা (Bengali)',
+  tamil: 'தமிழ் (Tamil)',
+  telugu: 'తెలుగు (Telugu)',
+  gujarati: 'ગુજરાતી (Gujarati)',
+  kannada: 'ಕನ್ನಡ (Kannada)',
+  malayalam: 'മലയാളം (Malayalam)',
+  punjabi: 'ਪੰਜਾਬੀ (Punjabi)',
+  odia: 'ଓଡ଼ିଆ (Odia)',
+  urdu: 'اردو (Urdu)',
+  english: 'English',
+};
 
 export default function ManualsPage() {
   const [manuals, setManuals] = useState([]);
@@ -33,6 +55,8 @@ export default function ManualsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [alert, setAlert] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [expandedManualId, setExpandedManualId] = useState(null);
+  const [showAdaptedModal, setShowAdaptedModal] = useState(null);
   const navigate = useNavigate();
 
   // Form state
@@ -326,7 +350,61 @@ export default function ManualsPage() {
                           Needs Indexing
                         </Badge>
                       )}
+                      {manual.detected_language && (
+                        <Badge variant="default">
+                          <Languages className="w-3 h-3" />
+                          {LANGUAGE_DISPLAY[manual.detected_language] || manual.detected_language}
+                        </Badge>
+                      )}
                     </div>
+
+                    {/* AI Adapted Content Preview */}
+                    {manual.indexed && manual.adapted_summary && (
+                      <motion.div 
+                        className="mt-4 pt-4"
+                        style={{ borderTop: '1px dashed var(--paper-300)' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
+                            <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                              AI Adapted Content
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setShowAdaptedModal(manual)}
+                            className="btn btn-ghost btn-sm text-setu-600 hover:text-setu-700"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Full
+                          </button>
+                        </div>
+                        
+                        {/* Key Points Preview */}
+                        {manual.key_points && manual.key_points.length > 0 && (
+                          <div className="space-y-1">
+                            {manual.key_points.slice(0, 3).map((point, idx) => (
+                              <p 
+                                key={idx} 
+                                className="text-sm line-clamp-1 flex items-start gap-2"
+                                style={{ color: 'var(--ink-600)' }}
+                              >
+                                <span style={{ color: 'var(--setu-400)' }}>•</span>
+                                <span className="indic-text">{point}</span>
+                              </p>
+                            ))}
+                            {manual.key_points.length > 3 && (
+                              <p className="text-xs" style={{ color: 'var(--ink-400)' }}>
+                                +{manual.key_points.length - 3} more key points...
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -506,6 +584,99 @@ export default function ManualsPage() {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* AI Adapted Content Modal */}
+        <Modal
+          isOpen={!!showAdaptedModal}
+          onClose={() => setShowAdaptedModal(null)}
+          title={showAdaptedModal?.title ? `AI Adaptation: ${showAdaptedModal.title}` : 'AI Adapted Content'}
+          icon={Sparkles}
+          size="xl"
+        >
+          {showAdaptedModal && (
+            <div className="modal-body">
+              {/* Language Badge */}
+              {showAdaptedModal.detected_language && (
+                <div className="mb-4 flex items-center gap-2">
+                  <Languages className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                    Content Language:
+                  </span>
+                  <Badge variant="primary">
+                    {LANGUAGE_DISPLAY[showAdaptedModal.detected_language] || showAdaptedModal.detected_language}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Key Points Section */}
+              {showAdaptedModal.key_points && showAdaptedModal.key_points.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-800)' }}>
+                    <BookMarked className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
+                    Key Points / मुख्य बिंदु
+                  </h4>
+                  <ul className="space-y-2">
+                    {showAdaptedModal.key_points.map((point, idx) => (
+                      <li 
+                        key={idx}
+                        className="flex items-start gap-3 p-3 rounded-lg"
+                        style={{ backgroundColor: 'var(--paper-100)' }}
+                      >
+                        <span 
+                          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                          style={{ 
+                            backgroundColor: 'var(--setu-100)', 
+                            color: 'var(--setu-700)' 
+                          }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span className="text-sm indic-text leading-relaxed" style={{ color: 'var(--ink-700)' }}>
+                          {point}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Full Summary Section */}
+              {showAdaptedModal.adapted_summary && (
+                <div>
+                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-800)' }}>
+                    <FileText className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
+                    Complete AI Summary
+                  </h4>
+                  <div 
+                    className="p-4 rounded-lg max-h-96 overflow-y-auto"
+                    style={{ 
+                      backgroundColor: 'var(--paper-100)',
+                      border: '1px solid var(--paper-200)',
+                    }}
+                  >
+                    <pre 
+                      className="whitespace-pre-wrap text-sm leading-relaxed indic-text"
+                      style={{ 
+                        color: 'var(--ink-700)',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {showAdaptedModal.adapted_summary}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="modal-footer">
+            <button
+              onClick={() => setShowAdaptedModal(null)}
+              className="btn btn-secondary"
+            >
+              Close
+            </button>
+          </div>
         </Modal>
 
         {/* Delete Confirmation */}
