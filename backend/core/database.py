@@ -1,7 +1,9 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from core.config import settings
-from models.database_models import Base  # Import Base from models
+
+# Define Base here to avoid circular imports
+Base = declarative_base()
 
 engine = create_engine(
     settings.database_url,

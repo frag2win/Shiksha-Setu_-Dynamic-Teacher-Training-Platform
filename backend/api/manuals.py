@@ -41,9 +41,9 @@ async def upload_manual(
             title=title,
             filename=file.filename,
             file_path=file_path,
+            language="en",  # Default language
             total_pages=page_count,
-            indexed=False,
-            processed="pending"
+            indexed=False
         )
         
         db.add(manual)

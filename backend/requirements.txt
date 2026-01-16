@@ -21,6 +21,7 @@ chromadb>=1.4.0                      # Vector database for RAG (Python 3.13+ com
 sentence-transformers==3.3.1         # Text embeddings (used by ChromaDB default)
 transformers==4.48.1                 # Compatible with sentence-transformers
 scikit-learn                         # ML utilities
+tenacity                             # Retry logic for ChromaDB
 
 # Translation
 deep-translator==1.11.4              # Google Translate (12 Indian languages)
