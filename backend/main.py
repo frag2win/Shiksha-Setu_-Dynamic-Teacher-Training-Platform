@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 # Add backend directory to Python path
 backend_dir = Path(__file__).parent
@@ -26,15 +27,34 @@ logger = logging.getLogger(__name__)
 from core.database import init_db
 from api import clusters_router, manuals_router, modules_router, translation_router
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan - startup and shutdown events"""
+    # Startup
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("Database initialized successfully")
+    yield
+    # Shutdown
+    logger.info("Shutting down application...")
+
 app = FastAPI(
     title="Shiksha-Setu API",
     description="Dynamic Teacher Training Platform - Backend API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,13 +65,6 @@ app.include_router(clusters_router)
 app.include_router(manuals_router)
 app.include_router(modules_router)
 app.include_router(translation_router)
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup"""
-    logger.info("Initializing database...")
-    init_db()
-    logger.info("Database initialized successfully")
 
 @app.get("/")
 async def root():

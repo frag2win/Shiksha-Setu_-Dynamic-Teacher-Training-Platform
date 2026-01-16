@@ -140,7 +140,7 @@ class RAGEngine:
         """Reset the entire collection (use with caution)"""
         try:
             # Recreate the vector store
-            self.vector_store = SimpleVectorStore(
+            self.vector_store = ChromaVectorStore(
                 persist_directory=settings.chroma_persist_directory
             )
             logger.info("Vector store reset successfully")
