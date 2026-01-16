@@ -4,24 +4,22 @@ from datetime import datetime
 
 class ClusterBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    geographic_type: str = Field(..., description="Urban, Rural, or Tribal")
-    primary_language: str = Field(..., min_length=1, max_length=50)
-    infrastructure_level: str = Field(..., description="High, Medium, or Low")
-    specific_challenges: Optional[str] = Field(None, max_length=500)
-    total_teachers: int = Field(..., ge=1, le=10000)
-    additional_notes: Optional[str] = Field(None, max_length=500)
+    region_type: str = Field(..., description="Urban, Rural, Tribal Belt, etc.")
+    language: str = Field(..., min_length=1, max_length=50)
+    infrastructure_constraints: Optional[str] = Field(None, max_length=500)
+    key_issues: Optional[str] = Field(None, max_length=500)
+    grade_range: Optional[str] = Field(None, max_length=50)
 
 class ClusterCreate(ClusterBase):
     pass
 
 class ClusterUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    geographic_type: Optional[str] = None
-    primary_language: Optional[str] = None
-    infrastructure_level: Optional[str] = None
-    specific_challenges: Optional[str] = None
-    total_teachers: Optional[int] = Field(None, ge=1, le=10000)
-    additional_notes: Optional[str] = None
+    region_type: Optional[str] = None
+    language: Optional[str] = None
+    infrastructure_constraints: Optional[str] = None
+    key_issues: Optional[str] = None
+    grade_range: Optional[str] = None
 
 class ClusterResponse(ClusterBase):
     id: int
@@ -33,21 +31,21 @@ class ClusterResponse(ClusterBase):
 
 class ManualBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
-    language: str = Field(..., description="Content language")
-    cluster_id: Optional[int] = None
 
 class ManualCreate(ManualBase):
     filename: str
     file_path: str
     total_pages: Optional[int] = None
 
-class ManualResponse(ManualBase):
+class ManualResponse(BaseModel):
     id: int
+    title: str
     filename: str
-    total_pages: Optional[int]
+    file_path: Optional[str] = None
+    total_pages: Optional[int] = None
     upload_date: datetime
     indexed: bool
+    processed: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -58,15 +56,22 @@ class ModuleBase(BaseModel):
     cluster_id: int
     original_content: str
     adapted_content: str
-    target_language: Optional[str] = None
-    section_title: Optional[str] = None
+    language: Optional[str] = None
+    learning_objective: Optional[str] = None
 
 class ModuleCreate(ModuleBase):
     pass
 
-class ModuleResponse(ModuleBase):
+class ModuleResponse(BaseModel):
     id: int
-    metadata: Optional[str] = None
+    title: str
+    manual_id: int
+    cluster_id: int
+    original_content: str
+    adapted_content: str
+    language: Optional[str] = None
+    learning_objective: Optional[str] = None
+    approved: bool = False
     created_at: datetime
     updated_at: datetime
     
@@ -92,6 +97,5 @@ class FeedbackResponse(FeedbackBase):
 class GenerateModuleRequest(BaseModel):
     manual_id: int
     cluster_id: int
-    original_content: str = Field(..., min_length=50, max_length=5000)
+    topic: str = Field(..., min_length=3, max_length=200, description="Topic to generate content for")
     target_language: Optional[str] = None
-    section_title: Optional[str] = Field(None, max_length=200)

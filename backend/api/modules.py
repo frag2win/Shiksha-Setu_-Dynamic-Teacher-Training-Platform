@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import datetime
 from core.database import get_db
 from models.database_models import Module, Manual, Cluster
 from schemas.api_schemas import ModuleResponse, GenerateModuleRequest, FeedbackCreate, FeedbackResponse
@@ -45,43 +46,50 @@ async def generate_module(
         )
     
     try:
+        # Retrieve relevant content from RAG using the topic
+        logger.info(f"Retrieving content for topic: {request.topic}")
+        rag_results = rag_engine.search(request.topic, manual_id=request.manual_id, top_k=5)
+        
+        if not rag_results:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No relevant content found for topic '{request.topic}' in the manual"
+            )
+        
+        # Combine retrieved content
+        original_content = "\n\n".join([result['content'] for result in rag_results])
+        
         # Build cluster profile dict for AI engine
         cluster_profile = {
             "name": cluster.name,
-            "geographic_type": cluster.geographic_type,
-            "primary_language": cluster.primary_language,
-            "infrastructure_level": cluster.infrastructure_level,
-            "specific_challenges": cluster.specific_challenges or "None specified",
-            "total_teachers": cluster.total_teachers,
-            "additional_notes": cluster.additional_notes or "None specified"
+            "region_type": cluster.region_type,
+            "language": cluster.language,
+            "infrastructure_constraints": cluster.infrastructure_constraints or "None specified",
+            "key_issues": cluster.key_issues or "None specified",
+            "grade_range": cluster.grade_range or "Not specified"
         }
         
         # Generate adapted content using AI
         logger.info(f"Generating adapted content for cluster: {cluster.name}")
         adaptation_result = await ai_engine.adapt_content(
-            source_content=request.original_content,
+            source_content=original_content,
             cluster_profile=cluster_profile,
-            section_title=request.section_title or "Training Module"
+            topic=request.topic
         )
         
-        # Determine target language (use request language or cluster's primary language)
-        target_lang = request.target_language or cluster.primary_language
+        # Determine target language
+        target_lang = request.target_language or cluster.language
         
         # Create module record
-        import json
         module = Module(
-            title=request.section_title or f"Module for {cluster.name}",
+            title=f"{request.topic} - {cluster.name}",
             manual_id=request.manual_id,
             cluster_id=request.cluster_id,
-            original_content=request.original_content,
+            original_content=original_content,
             adapted_content=adaptation_result['adapted_content'],
-            target_language=target_lang,
-            section_title=request.section_title,
-            metadata=json.dumps({
-                "cluster_name": cluster.name,
-                "manual_title": manual.title,
-                "generated_at": datetime.utcnow().isoformat()
-            })
+            language=target_lang,
+            learning_objective=adaptation_result.get('learning_objective', ''),
+            approved=False
         )
         
         db.add(module)
@@ -91,6 +99,8 @@ async def generate_module(
         logger.info(f"Module generated successfully with ID: {module.id}")
         return module
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating module: {str(e)}")
         raise HTTPException(
