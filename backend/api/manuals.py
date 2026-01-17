@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 from core.database import get_db
-from models.database_models import Manual
+from models.database_models import Manual, Module, Feedback, ExportedPDF
 from schemas.api_schemas import ManualCreate, ManualResponse
 from services.pdf_processor import PDFProcessor
 from services.rag_engine import RAGEngine
@@ -182,14 +182,41 @@ async def delete_manual(manual_id: int, db: Session = Depends(get_db)):
     
     # Delete from RAG engine
     if manual.indexed:
-        rag_engine.delete_manual(manual.id)
+        try:
+            rag_engine.delete_manual(manual.id)
+        except Exception as e:
+            logger.warning(f"Failed to delete manual {manual.id} from RAG engine: {e}")
     
     # Delete file
     if os.path.exists(manual.file_path):
-        os.remove(manual.file_path)
+        try:
+            os.remove(manual.file_path)
+        except OSError as e:
+            logger.warning(f"Failed to delete manual file '{manual.file_path}': {e}")
+
+    # Delete dependent records (modules -> feedback/exported_pdfs) to avoid FK nulling
+    module_ids = [row[0] for row in db.query(Module.id).filter(Module.manual_id == manual_id).all()]
+    if module_ids:
+        # Remove exported PDF files, then DB records
+        pdfs = (
+            db.query(ExportedPDF)
+            .filter(ExportedPDF.module_id.in_(module_ids))
+            .all()
+        )
+        for pdf in pdfs:
+            if pdf.file_path and os.path.exists(pdf.file_path):
+                try:
+                    os.remove(pdf.file_path)
+                except OSError:
+                    # Best-effort cleanup; DB cleanup still proceeds
+                    pass
+
+        db.query(ExportedPDF).filter(ExportedPDF.module_id.in_(module_ids)).delete(synchronize_session=False)
+        db.query(Feedback).filter(Feedback.module_id.in_(module_ids)).delete(synchronize_session=False)
+        db.query(Module).filter(Module.id.in_(module_ids)).delete(synchronize_session=False)
     
-    # Delete from database
-    db.delete(manual)
+    # Delete from database (use bulk delete to avoid ORM trying to NULL non-nullable FKs)
+    db.query(Manual).filter(Manual.id == manual_id).delete(synchronize_session=False)
     db.commit()
     
     return None

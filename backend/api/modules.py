@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, List
 from core.database import get_db
-from models.database_models import Module, Manual, Cluster, ExportedPDF
+from models.database_models import Module, Manual, Cluster, ExportedPDF, Feedback
 from schemas.api_schemas import ModuleResponse, GenerateModuleRequest, FeedbackCreate, FeedbackResponse
 from services.rag_engine import RAGEngine
 from services.ai_engine import AIAdaptationEngine
 import logging
 import json
 from datetime import datetime, timedelta
+import os
 
 # PDF Exporting requirements
 from services.pdf_export_service import PDFExportService
@@ -263,6 +264,18 @@ async def delete_module(module_id: int, db: Session = Depends(get_db)):
             detail=f"Module with ID {module_id} not found"
         )
     
+    # Clean up dependent records/files first to avoid FK constraint issues.
+    pdfs = db.query(ExportedPDF).filter(ExportedPDF.module_id == module_id).all()
+    for pdf in pdfs:
+        if pdf.file_path and os.path.exists(pdf.file_path):
+            try:
+                os.remove(pdf.file_path)
+            except OSError:
+                pass
+
+    db.query(ExportedPDF).filter(ExportedPDF.module_id == module_id).delete(synchronize_session=False)
+    db.query(Feedback).filter(Feedback.module_id == module_id).delete(synchronize_session=False)
+
     db.delete(module)
     db.commit()
     

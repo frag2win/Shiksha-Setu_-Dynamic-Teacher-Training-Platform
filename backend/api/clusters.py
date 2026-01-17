@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from core.database import get_db
-from models.database_models import Cluster
+from models.database_models import Cluster, Module, Feedback, ExportedPDF
 from schemas.api_schemas import ClusterCreate, ClusterUpdate, ClusterResponse
+import os
 
 router = APIRouter(prefix="/api/clusters", tags=["Clusters"])
 
@@ -77,7 +78,27 @@ async def delete_cluster(cluster_id: int, db: Session = Depends(get_db)):
             detail=f"Cluster with ID {cluster_id} not found"
         )
     
-    db.delete(cluster)
+    # Delete dependent records (modules -> feedback/exported_pdfs) to avoid FK nulling
+    module_ids = [row[0] for row in db.query(Module.id).filter(Module.cluster_id == cluster_id).all()]
+    if module_ids:
+        pdfs = (
+            db.query(ExportedPDF)
+            .filter(ExportedPDF.module_id.in_(module_ids))
+            .all()
+        )
+        for pdf in pdfs:
+            if pdf.file_path and os.path.exists(pdf.file_path):
+                try:
+                    os.remove(pdf.file_path)
+                except OSError:
+                    pass
+
+        db.query(ExportedPDF).filter(ExportedPDF.module_id.in_(module_ids)).delete(synchronize_session=False)
+        db.query(Feedback).filter(Feedback.module_id.in_(module_ids)).delete(synchronize_session=False)
+        db.query(Module).filter(Module.id.in_(module_ids)).delete(synchronize_session=False)
+
+    # Use bulk delete to avoid ORM trying to NULL non-nullable FKs
+    db.query(Cluster).filter(Cluster.id == cluster_id).delete(synchronize_session=False)
     db.commit()
     
     return None
