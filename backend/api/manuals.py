@@ -7,6 +7,10 @@ from models.database_models import Manual
 from schemas.api_schemas import ManualCreate, ManualResponse
 from services.pdf_processor import PDFProcessor
 from services.rag_engine import RAGEngine
+from services.manual_adapter import get_manual_adapter_service
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/manuals", tags=["Manuals"])
 
@@ -43,12 +47,14 @@ async def upload_manual(
             file_path=file_path,
             total_pages=page_count,
             indexed=False,
-            processed="pending"
         )
         
         db.add(manual)
         db.commit()
         db.refresh(manual)
+
+        # Attach a transient status attribute for the current response (not stored in DB)
+        manual.processed = "pending"
         
         return manual
         
@@ -60,7 +66,15 @@ async def upload_manual(
 
 @router.post("/{manual_id}/index", response_model=ManualResponse)
 async def index_manual(manual_id: int, db: Session = Depends(get_db)):
-    """Index a manual for RAG search"""
+    """
+    Index a manual for RAG search and generate AI-adapted content.
+    
+    This endpoint:
+    1. Extracts text from the PDF
+    2. Detects the document language
+    3. Generates AI summary and key points in the same language
+    4. Indexes content in ChromaDB for semantic search
+    """
     
     manual = db.query(Manual).filter(Manual.id == manual_id).first()
     if not manual:
@@ -70,10 +84,36 @@ async def index_manual(manual_id: int, db: Session = Depends(get_db)):
         )
     
     try:
+        # Update status to processing
+        manual.processed = "processing"
+        db.commit()
+        
         # Extract text from PDF
+        logger.info(f"Extracting text from: {manual.file_path}")
         text = pdf_processor.extract_text(manual.file_path)
         
-        # Chunk the text
+        if not text or len(text.strip()) < 100:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Could not extract sufficient text from the PDF. The file may be scanned images or corrupt."
+            )
+        
+        # Get the manual adapter service and generate AI adaptation
+        logger.info(f"Generating AI adaptation for manual: {manual.title}")
+        adapter_service = get_manual_adapter_service()
+        adaptation_result = await adapter_service.adapt_manual(
+            file_path=manual.file_path,
+            extracted_text=text,
+            manual_title=manual.title
+        )
+        
+        # Store the adaptation results
+        manual.extracted_text = adaptation_result["extracted_text"]
+        manual.detected_language = adaptation_result["detected_language"]
+        manual.adapted_summary = adaptation_result["adapted_summary"]
+        manual.key_points = adaptation_result["key_points"]
+        
+        # Chunk the text for RAG indexing
         chunks = pdf_processor.chunk_text(text)
         
         # Index in RAG engine
@@ -81,16 +121,26 @@ async def index_manual(manual_id: int, db: Session = Depends(get_db)):
         
         if success:
             manual.indexed = True
+            manual.processed = "completed"
             db.commit()
             db.refresh(manual)
+            
+            logger.info(f"Manual '{manual.title}' indexed successfully with AI adaptation in {adaptation_result['detected_language']}")
             return manual
         else:
+            manual.processed = "failed"
+            db.commit()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to index manual"
+                detail="Failed to index manual in vector store"
             )
             
+    except HTTPException:
+        raise
     except Exception as e:
+        manual.processed = "failed"
+        db.commit()
+        logger.error(f"Error indexing manual: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error indexing manual: {str(e)}"

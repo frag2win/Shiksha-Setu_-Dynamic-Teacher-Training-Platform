@@ -1,210 +1,194 @@
 /**
  * Shiksha-Setu API Service Layer
- * Centralized API communication with error handling
+ * Centralized API communication with Axios and error handling
+ * 
+ * API CONTRACTS (DO NOT MODIFY):
+ * - /api/clusters/          - GET, POST
+ * - /api/clusters/{id}      - GET, PUT, DELETE
+ * - /api/manuals/           - GET
+ * - /api/manuals/upload     - POST (multipart/form-data)
+ * - /api/manuals/{id}       - GET, DELETE
+ * - /api/manuals/{id}/index - POST
+ * - /api/modules/           - GET (with query params: cluster_id, manual_id)
+ * - /api/modules/generate   - POST
+ * - /api/modules/{id}       - GET, DELETE
+ * - /api/modules/{id}/approve - PATCH
+ * - /api/modules/{id}/feedback - POST
+ * - /api/translation/translate - POST
+ * - /api/translation/translate/batch - POST
  */
+
+import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000';
 
-class ApiService {
-  constructor() {
-    this.baseURL = API_BASE_URL;
+// Create axios instance with default config
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 60000, // 60 seconds for AI generation
+});
+
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const message = error.response?.data?.detail || 
+                    error.message || 
+                    'An unexpected error occurred';
+    console.error(`API Error:`, message);
+    return Promise.reject(new Error(message));
   }
+);
 
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    };
+// ================== HEALTH ==================
+export const checkHealth = () => apiClient.get('/health');
 
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
-      }
+// ================== CLUSTERS ==================
+export const getClusters = () => apiClient.get('/api/clusters/');
 
-      if (response.status === 204) {
-        return null;
-      }
+export const getCluster = (id) => apiClient.get(`/api/clusters/${id}`);
 
-      return await response.json();
-    } catch (error) {
-      console.error(`API Error [${endpoint}]:`, error);
-      throw error;
+export const createCluster = (clusterData) => {
+  const payload = {
+    name: clusterData.name,
+    region_type: clusterData.region_type,
+    language: clusterData.language,
+    infrastructure_constraints: clusterData.infrastructure_constraints || null,
+    key_issues: clusterData.key_issues || null,
+    grade_range: clusterData.grade_range || null,
+  };
+  return apiClient.post('/api/clusters/', payload);
+};
+
+export const updateCluster = (id, clusterData) => {
+  const payload = {
+    name: clusterData.name,
+    region_type: clusterData.region_type,
+    language: clusterData.language,
+    infrastructure_constraints: clusterData.infrastructure_constraints || null,
+    key_issues: clusterData.key_issues || null,
+    grade_range: clusterData.grade_range || null,
+  };
+  return apiClient.put(`/api/clusters/${id}`, payload);
+};
+
+export const deleteCluster = (id) => apiClient.delete(`/api/clusters/${id}`);
+
+// ================== MANUALS ==================
+export const getManuals = () => apiClient.get('/api/manuals/');
+
+export const getManual = (id) => apiClient.get(`/api/manuals/${id}`);
+
+export const uploadManual = async (title, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await axios.post(
+    `${API_BASE_URL}/api/manuals/upload?title=${encodeURIComponent(title)}`,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000, // 2 minutes for large files
     }
-  }
+  );
+  return response.data;
+};
 
-  // Health Check
-  async checkHealth() {
-    return this.request('/health');
-  }
+export const indexManual = (id) => apiClient.post(`/api/manuals/${id}/index`);
 
-  // ================== CLUSTERS ==================
-  async getClusters() {
-    return this.request('/api/clusters/');
-  }
+export const deleteManual = (id) => apiClient.delete(`/api/manuals/${id}`);
 
-  async getCluster(id) {
-    return this.request(`/api/clusters/${id}`);
-  }
+// ================== MODULES ==================
+export const getModules = (filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.cluster_id) params.append('cluster_id', filters.cluster_id);
+  if (filters.manual_id) params.append('manual_id', filters.manual_id);
+  
+  const queryString = params.toString();
+  return apiClient.get(`/api/modules/${queryString ? `?${queryString}` : ''}`);
+};
 
-  async createCluster(clusterData) {
-    // Map frontend field names to backend field names
-    const backendData = {
-      name: clusterData.name,
-      region_type: clusterData.region_type,
-      language: clusterData.language,
-      infrastructure_constraints: clusterData.infrastructure_constraints || null,
-      key_issues: clusterData.key_issues || null,
-      grade_range: clusterData.grade_range || null
-    };
-    return this.request('/api/clusters/', {
-      method: 'POST',
-      body: JSON.stringify(backendData),
-    });
-  }
+export const getModule = (id) => apiClient.get(`/api/modules/${id}`);
 
-  async updateCluster(id, clusterData) {
-    // Map frontend field names to backend field names
-    const backendData = {
-      name: clusterData.name,
-      region_type: clusterData.region_type,
-      language: clusterData.language,
-      infrastructure_constraints: clusterData.infrastructure_constraints || null,
-      key_issues: clusterData.key_issues || null,
-      grade_range: clusterData.grade_range || null
-    };
-    return this.request(`/api/clusters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(backendData),
-    });
-  }
+export const getSupportedLanguages = () => apiClient.get('/api/modules/languages');
 
-  async deleteCluster(id) {
-    return this.request(`/api/clusters/${id}`, {
-      method: 'DELETE',
-    });
-  }
+export const generateModule = (data) => {
+  const payload = {
+    manual_id: parseInt(data.manual_id),
+    cluster_id: parseInt(data.cluster_id),
+    topic: data.topic,
+    target_language: data.target_language || null,
+  };
+  return apiClient.post('/api/modules/generate', payload);
+};
 
-  // ================== MANUALS ==================
-  async getManuals() {
-    return this.request('/api/manuals/');
-  }
+export const approveModule = (id) => apiClient.patch(`/api/modules/${id}/approve`);
 
-  async getManual(id) {
-    return this.request(`/api/manuals/${id}`);
-  }
+export const deleteModule = (id) => apiClient.delete(`/api/modules/${id}`);
 
-  async uploadManual(title, file) {
-    const formData = new FormData();
-    formData.append('file', file);
+export const submitFeedback = (moduleId, rating, comment = null) => {
+  return apiClient.post(`/api/modules/${moduleId}/feedback`, { rating, comment });
+};
 
-    const url = `${this.baseURL}/api/manuals/upload?title=${encodeURIComponent(title)}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    });
+// ================== TRANSLATION ==================
+export const translate = (text, targetLanguage, sourceLanguage = 'english') => {
+  return apiClient.post('/api/translation/translate', {
+    text,
+    target_language: targetLanguage,
+    source_language: sourceLanguage,
+  });
+};
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Upload failed');
-    }
+export const batchTranslate = (texts, targetLanguage, sourceLanguage = 'english') => {
+  return apiClient.post('/api/translation/translate/batch', {
+    texts,
+    target_language: targetLanguage,
+    source_language: sourceLanguage,
+  });
+};
 
-    return await response.json();
-  }
+// ================== DASHBOARD STATS ==================
+export const getDashboardStats = async () => {
+  const [clusters, manuals, modules] = await Promise.all([
+    getClusters(),
+    getManuals(),
+    getModules(),
+  ]);
+  
+  return {
+    totalClusters: clusters.length,
+    totalManuals: manuals.length,
+    indexedManuals: manuals.filter(m => m.indexed).length,
+    totalModules: modules.length,
+    approvedModules: modules.filter(m => m.approved).length,
+  };
+};
 
-  async indexManual(id) {
-    return this.request(`/api/manuals/${id}/index`, {
-      method: 'POST',
-    });
-  }
+// Default export for backward compatibility
+const api = {
+  checkHealth,
+  getClusters,
+  getCluster,
+  createCluster,
+  updateCluster,
+  deleteCluster,
+  getManuals,
+  getManual,
+  uploadManual,
+  indexManual,
+  deleteManual,
+  getModules,
+  getModule,
+  generateModule,
+  approveModule,
+  deleteModule,
+  submitFeedback,
+  translate,
+  batchTranslate,
+  getDashboardStats,
+};
 
-  async deleteManual(id) {
-    return this.request(`/api/manuals/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // ================== MODULES ==================
-  async getModules(filters = {}) {
-    const params = new URLSearchParams();
-    if (filters.cluster_id) params.append('cluster_id', filters.cluster_id);
-    if (filters.manual_id) params.append('manual_id', filters.manual_id);
-    
-    const queryString = params.toString();
-    return this.request(`/api/modules/${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getModule(id) {
-    return this.request(`/api/modules/${id}`);
-  }
-
-  async generateModule(data) {
-    // Map frontend fields to backend expected format
-    const backendData = {
-      manual_id: parseInt(data.manual_id),
-      cluster_id: parseInt(data.cluster_id),
-      topic: data.topic,
-      target_language: data.target_language || null
-    };
-    return this.request('/api/modules/generate', {
-      method: 'POST',
-      body: JSON.stringify(backendData),
-    });
-  }
-
-  async approveModule(id) {
-    return this.request(`/api/modules/${id}/approve`, {
-      method: 'PATCH',
-    });
-  }
-
-  async deleteModule(id) {
-    return this.request(`/api/modules/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async submitFeedback(moduleId, rating, comment = null) {
-    return this.request(`/api/modules/${moduleId}/feedback`, {
-      method: 'POST',
-      body: JSON.stringify({ rating, comment }),
-    });
-  }
-
-  // ================== TRANSLATION ==================
-  async translate(text, targetLanguage, sourceLanguage = 'english') {
-    return this.request('/api/translation/translate', {
-      method: 'POST',
-      body: JSON.stringify({
-        text,
-        target_language: targetLanguage,
-        source_language: sourceLanguage,
-      }),
-    });
-  }
-
-  async batchTranslate(texts, targetLanguage, sourceLanguage = 'english') {
-    return this.request('/api/translation/translate/batch', {
-      method: 'POST',
-      body: JSON.stringify({
-        texts,
-        target_language: targetLanguage,
-        source_language: sourceLanguage,
-      }),
-    });
-  }
-
-  async getSupportedLanguages() {
-    return this.request('/api/translation/languages');
-  }
-}
-
-export const api = new ApiService();
 export default api;

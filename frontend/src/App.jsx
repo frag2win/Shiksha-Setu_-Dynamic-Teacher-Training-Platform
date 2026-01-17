@@ -1,32 +1,62 @@
-import React, { useState, useEffect } from 'react'
-import './App.css'
+/**
+ * Shiksha-Setu Main Application
+ * A book-like experience for teacher training management
+ */
 
-function App() {
-  const [apiStatus, setApiStatus] = useState('checking...')
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import BookLayout from './components/layout/BookLayout';
+import { LoadingSpinner } from './components/ui/SharedComponents';
 
-  useEffect(() => {
-    fetch('http://localhost:8000/health')
-      .then(res => res.json())
-      .then(data => setApiStatus(data.status))
-      .catch(() => setApiStatus('disconnected'))
-  }, [])
+// Lazy load pages for performance
+const CoverPage = lazy(() => import('./components/pages/CoverPage'));
+const ClustersPage = lazy(() => import('./components/pages/ClustersPage'));
+const ManualsPage = lazy(() => import('./components/pages/ManualsPage'));
+const GeneratorPage = lazy(() => import('./components/pages/GeneratorPage'));
+const LibraryPage = lazy(() => import('./components/pages/LibraryPage'));
+const TranslationPage = lazy(() => import('./components/pages/TranslationPage'));
 
+// Page loading fallback
+function PageLoader() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Shiksha-Setu</h1>
-        <h2>Dynamic Teacher Training Platform</h2>
-        <p>API Status: <span className={apiStatus === 'healthy' ? 'status-ok' : 'status-error'}>{apiStatus}</span></p>
-      </header>
-      
-      <main className="App-main">
-        <div className="welcome-message">
-          <h3>Command Center</h3>
-          <p>Platform initialization in progress...</p>
-        </div>
-      </main>
+    <div className="page min-h-[60vh] flex items-center justify-center">
+      <div className="text-center">
+        <LoadingSpinner className="mx-auto mb-4 text-setu-500" size="lg" />
+        <p className="text-ink-400">Loading page...</p>
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+// Animated routes wrapper
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<CoverPage />} />
+          <Route path="/clusters" element={<ClustersPage />} />
+          <Route path="/manuals" element={<ManualsPage />} />
+          <Route path="/generate" element={<GeneratorPage />} />
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/translate" element={<TranslationPage />} />
+        </Routes>
+      </Suspense>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <BookLayout>
+        <AnimatedRoutes />
+      </BookLayout>
+    </BrowserRouter>
+  );
+}
+
+export default App;
