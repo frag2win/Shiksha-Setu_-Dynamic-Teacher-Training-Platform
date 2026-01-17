@@ -11,7 +11,7 @@ backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
 
 from core.database import engine, Base, init_db
-from models.database_models import Cluster, Manual, Module, Feedback
+from models.database_models import Cluster, Manual, Module
 
 print("Initializing Shiksha Setu Database")
 print("=" * 50)
@@ -26,7 +26,6 @@ try:
     print("  - clusters")
     print("  - manuals")
     print("  - modules")
-    print("  - feedback")
     print()
     
     # Verify tables exist
