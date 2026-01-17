@@ -70,6 +70,9 @@ async def generate_module(
                 detail=f"No relevant content found for topic '{request.topic}' in manual"
             )
         
+        logger.info(f"Retrieved {len(original_content)} characters of source content")
+        logger.info(f"Source content preview: {original_content[:200]}...")
+        
         # Step 2: Build cluster profile dict (backward-compatible keys for the prompt)
         infrastructure_constraints = cluster.infrastructure_level
         if cluster.additional_notes:

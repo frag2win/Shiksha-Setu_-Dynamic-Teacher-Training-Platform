@@ -2,11 +2,11 @@
 
 ## **Product Requirements Document (PRD)**
 
-**Version:** 1.6 (In Development)
+**Version:** 1.7 (In Development)
 
-**Status:** Phase 1 Complete - Pin Feature Added
+**Status:** Phase 1 Complete - OCR Support Added
 
-**Last Updated:** January 17, 2026
+**Last Updated:** January 18, 2026
 
 **Project Type:** B2G (Business to Government) / EdTech AI Dashboard
 
@@ -188,6 +188,31 @@ A **Dynamic Pedagogical Engine** that uses GenAI (RAG) to ingest standard state 
 ---
 
 ## **11. Changelog**
+
+### Version 1.7 - January 18, 2026
+**OCR Support for Scanned PDFs and Images**
+- Added OCR (Optical Character Recognition) capability to handle image-based PDFs
+- Can now process:
+  - Scanned training manuals
+  - PDFs with photos containing text
+  - Image-based documents
+  - Mixed PDFs (some pages text, some scanned)
+- Implementation details:
+  - Added pytesseract, pdf2image, and Pillow dependencies
+  - Smart fallback mechanism: tries text extraction first, uses OCR if insufficient
+  - Three extraction modes: automatic (default), OCR-only, hybrid
+  - Automatic detection of scanned PDFs
+  - Supports English + Hindi by default, extensible to 12+ Indian languages
+- Performance considerations:
+  - Text extraction: ~1 sec per 50 pages
+  - OCR: ~2-5 sec per page (300 DPI)
+  - Configurable DPI and language settings
+- External dependencies:
+  - Tesseract OCR engine (requires separate installation on Windows)
+  - Poppler (for PDF to image conversion)
+- Created comprehensive OCR_SETUP.md guide for installation and configuration
+- Maintains backward compatibility - existing text-based PDFs process normally
+- Benefits: No manual rejected due to being scanned, broader document support
 
 ### Version 1.6 - January 17, 2026
 **Pin Feature Implementation**
