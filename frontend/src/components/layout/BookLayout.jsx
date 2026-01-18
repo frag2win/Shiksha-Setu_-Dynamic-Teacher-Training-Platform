@@ -18,9 +18,13 @@ import {
   X,
   ChevronRight,
   LogOut,
+  Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { checkHealth } from '../../services/api';
 import * as api from '../../services/api';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const navigation = [
   { path: '/', label: 'Cover', icon: BookOpen, pageNum: null, accent: 'setu' },
@@ -33,8 +37,10 @@ const navigation = [
 
 export default function BookLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [apiStatus, setApiStatus] = useState('checking');
   const location = useLocation();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   // Check API health
   useEffect(() => {
@@ -62,13 +68,13 @@ export default function BookLayout({ children }) {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--paper-100)' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--paper-200)' }}>
       {/* Mobile sidebar backdrop */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
             className="fixed inset-0 z-40 lg:hidden backdrop-blur-sm"
-            style={{ backgroundColor: 'rgba(20, 18, 16, 0.3)' }}
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
             onClick={() => setSidebarOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -77,29 +83,30 @@ export default function BookLayout({ children }) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar - styled like a book spine */}
+      {/* Sidebar - Fixed position, non-scrollable */}
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50
+          fixed inset-y-0 left-0 z-50
           w-64 transform transition-transform duration-300 ease-out
-          lg:transform-none
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
         style={{ 
-          background: 'linear-gradient(135deg, var(--paper-50) 0%, rgba(251, 248, 241, 0.98) 100%)',
-          borderRight: '1px solid var(--paper-200)',
-          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.03)',
+          background: 'linear-gradient(180deg, var(--paper-50) 0%, var(--paper-100) 100%)',
+          borderRight: '1px solid var(--border-color)',
+          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.2)',
+          height: '100vh',
+          overflowY: 'hidden',
         }}
       >
-        {/* Book spine accent */}
+        {/* Accent edge */}
         <div 
           className="absolute left-0 top-0 bottom-0 w-1"
           style={{ background: 'var(--gradient-setu)' }}
         />
         
-        <div className="h-full flex flex-col">
-          {/* Logo/Title with pulse animation */}
-          <div className="p-6 relative" style={{ borderBottom: '1px solid var(--paper-200)' }}>
+        <div className="h-full flex flex-col overflow-hidden">
+          {/* Logo/Title with glow animation */}
+          <div className="p-6 relative" style={{ borderBottom: '1px solid var(--border-color)' }}>
             <motion.div 
               className="flex items-center gap-3"
               initial={{ opacity: 0, x: -10 }}
@@ -111,12 +118,12 @@ export default function BookLayout({ children }) {
                 style={{ background: 'var(--gradient-setu)' }}
                 whileHover={{ scale: 1.05, rotate: 3 }}
               >
-                <BookOpen className="w-5 h-5 text-white" />
-                {/* Subtle glow */}
+                <BookOpen className="w-5 h-5" style={{ color: 'var(--paper-300)' }} />
+                {/* Glow effect */}
                 <div 
-                  className="absolute inset-0 rounded-lg opacity-50"
+                  className="absolute inset-0 rounded-lg opacity-60"
                   style={{ 
-                    boxShadow: '0 0 20px var(--setu-400)',
+                    boxShadow: '0 0 25px var(--setu-500)',
                     pointerEvents: 'none',
                   }}
                 />
@@ -125,7 +132,7 @@ export default function BookLayout({ children }) {
                 <h1 
                   className="font-serif text-lg"
                   style={{ 
-                    background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-700) 100%)',
+                    background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-500) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}
@@ -138,7 +145,7 @@ export default function BookLayout({ children }) {
           </div>
 
           {/* Navigation with enhanced active states */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
             <p className="text-xs uppercase tracking-wider mb-3 px-3" style={{ color: 'var(--ink-300)' }}>
               Table of Contents
             </p>
@@ -169,20 +176,9 @@ export default function BookLayout({ children }) {
                     >
                       <item.icon 
                         className="w-5 h-5 nav-icon transition-colors" 
-                        style={{ color: isActive ? `var(--${item.accent}-600)` : undefined }}
+                        style={{ color: isActive ? `var(--${item.accent}-500)` : undefined }}
                       />
                       <span className="flex-1">{item.label}</span>
-                      {item.pageNum && (
-                        <span 
-                          className="text-xs px-1.5 py-0.5 rounded"
-                          style={{ 
-                            color: isActive ? `var(--${item.accent}-600)` : 'var(--ink-300)',
-                            background: isActive ? `var(--${item.accent}-50)` : 'transparent',
-                          }}
-                        >
-                          p.{item.pageNum}
-                        </span>
-                      )}
                       <ChevronRight 
                         className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" 
                         style={{ color: 'var(--ink-300)' }} 
@@ -196,57 +192,88 @@ export default function BookLayout({ children }) {
 
           {/* Footer section */}
           <div className="p-4 space-y-3" style={{ borderTop: '1px solid var(--paper-200)' }}>
-            {/* Logout Button */}
-            <motion.button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-red-50 group"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <LogOut className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-red-600">Logout</span>
-            </motion.button>
-
-            {/* API Status with animation */}
-            <motion.div 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg"
-              style={{ background: 'var(--paper-100)' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <motion.div
-                className={`w-2 h-2 rounded-full`}
-                style={{
-                  backgroundColor: apiStatus === 'connected'
-                    ? 'var(--success-500)'
-                    : apiStatus === 'disconnected'
-                    ? 'var(--danger-500)'
-                    : 'var(--warm-400)'
+            {/* Settings Section */}
+            <div className="relative">
+              <button
+                onClick={() => setSettingsOpen(!settingsOpen)}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-opacity-50"
+                style={{ 
+                  backgroundColor: settingsOpen ? 'var(--paper-100)' : 'transparent',
+                  color: 'var(--ink-400)',
                 }}
-                animate={apiStatus === 'checking' ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ repeat: Infinity, duration: 1 }}
-              />
-              <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
-                {apiStatus === 'connected'
-                  ? 'API Connected'
-                  : apiStatus === 'disconnected'
-                  ? 'API Disconnected'
-                  : 'Checking...'}
-              </span>
-            </motion.div>
+              >
+                <Settings className="w-5 h-5" />
+                <span className="flex-1 text-left">Settings</span>
+                <ChevronRight 
+                  className={`w-4 h-4 transition-transform duration-200 ${settingsOpen ? 'rotate-90' : ''}`}
+                  style={{ color: 'var(--ink-300)' }}
+                />
+              </button>
+              
+              {/* Settings Dropdown */}
+              <AnimatePresence>
+                {settingsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-2 p-3 rounded-lg" style={{ backgroundColor: 'var(--paper-100)' }}>
+                      {/* Theme Toggle */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isDark ? (
+                            <Moon className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
+                          ) : (
+                            <Sun className="w-4 h-4" style={{ color: 'var(--warm-500)' }} />
+                          )}
+                          <span className="text-sm" style={{ color: 'var(--ink-500)' }}>
+                            {isDark ? 'Dark Mode' : 'Light Mode'}
+                          </span>
+                        </div>
+                        <button
+                          onClick={toggleTheme}
+                          className="relative w-12 h-6 rounded-full transition-colors duration-300"
+                          style={{
+                            backgroundColor: isDark ? 'var(--setu-500)' : 'var(--ink-200)',
+                          }}
+                          aria-label="Toggle theme"
+                        >
+                          <motion.div
+                            className="absolute top-1 w-4 h-4 rounded-full"
+                            style={{ backgroundColor: 'white' }}
+                            animate={{ left: isDark ? '26px' : '4px' }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          />
+                        </button>
+                      </div>
+                      
+                      {/* Theme Description */}
+                      <p className="mt-2 text-xs" style={{ color: 'var(--ink-400)' }}>
+                        {isDark 
+                          ? 'Switch to light mode for a classic paper look'
+                          : 'Switch to dark mode for reduced eye strain'
+                        }
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 min-w-0">
+      {/* Main content - offset for fixed sidebar */}
+      <main className="flex-1 min-w-0 lg:ml-64">
         {/* Mobile header with glass effect */}
         <header 
           className="lg:hidden sticky top-0 z-30 px-4 py-3 backdrop-blur-md"
           style={{ 
-            backgroundColor: 'rgba(251, 248, 241, 0.9)',
-            borderBottom: '1px solid var(--paper-200)',
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            borderBottom: '1px solid var(--border-color)',
           }}
         >
           <div className="flex items-center justify-between">
@@ -262,14 +289,27 @@ export default function BookLayout({ children }) {
             <h1 
               className="font-serif text-lg"
               style={{ 
-                background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-700) 100%)',
+                background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-500) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
               Shiksha-Setu
             </h1>
-            <div className="w-10" /> {/* Spacer for centering */}
+            {/* Mobile Theme Toggle */}
+            <motion.button
+              onClick={toggleTheme}
+              className="btn btn-ghost btn-icon"
+              aria-label="Toggle theme"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isDark ? (
+                <Sun className="w-5 h-5" style={{ color: 'var(--warm-500)' }} />
+              ) : (
+                <Moon className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
+              )}
+            </motion.button>
           </div>
         </header>
 

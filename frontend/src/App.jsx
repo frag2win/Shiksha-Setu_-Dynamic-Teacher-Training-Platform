@@ -6,6 +6,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { ThemeProvider } from './contexts/ThemeContext';
 import BookLayout from './components/layout/BookLayout';
 import { LoadingSpinner } from './components/ui/SharedComponents';
 
@@ -177,15 +178,17 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      {user && user.role === 'TEACHER' ? (
-        <BookLayout>
+    <ThemeProvider>
+      <BrowserRouter>
+        {user && user.role === 'TEACHER' ? (
+          <BookLayout>
+            <AnimatedRoutes user={user} onLogout={handleLogout} />
+          </BookLayout>
+        ) : (
           <AnimatedRoutes user={user} onLogout={handleLogout} />
-        </BookLayout>
-      ) : (
-        <AnimatedRoutes user={user} onLogout={handleLogout} />
-      )}
-    </BrowserRouter>
+        )}
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

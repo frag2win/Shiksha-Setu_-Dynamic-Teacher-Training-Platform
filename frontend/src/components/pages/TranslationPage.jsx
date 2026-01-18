@@ -238,7 +238,7 @@ export default function TranslationPage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--ink-400)' }}>Page 5</p>
-              <h1 className="text-xl font-serif" style={{ color: 'var(--ink-800)' }}>
+              <h1 className="text-xl font-serif" style={{ color: 'var(--ink-100)' }}>
                 Translation
               </h1>
             </div>
@@ -266,7 +266,7 @@ export default function TranslationPage() {
               whileTap={{ scale: 0.9 }}
               title="Swap languages"
             >
-              <ArrowLeftRight className="w-4 h-4" style={{ color: 'var(--setu-600)' }} />
+              <ArrowLeftRight className="w-4 h-4" style={{ color: 'var(--setu-400)' }} />
             </motion.button>
 
             <select
@@ -336,7 +336,7 @@ export default function TranslationPage() {
                 style={{ borderBottom: '1px solid var(--paper-200)' }}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
                     {sourceLang?.native}
                   </span>
                   <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
@@ -380,7 +380,7 @@ export default function TranslationPage() {
                   className="w-full h-48 p-4 resize-none border-0 focus:outline-none focus:ring-0"
                   style={{ 
                     backgroundColor: 'transparent',
-                    color: 'var(--ink-700)',
+                    color: 'var(--ink-200)',
                   }}
                 />
 
@@ -450,7 +450,7 @@ export default function TranslationPage() {
               >
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" style={{ color: 'var(--teal-600)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
                     {targetLang?.native}
                   </span>
                   <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
@@ -496,7 +496,7 @@ export default function TranslationPage() {
                     className="prose-content"
                     style={{ 
                       fontFamily: 'system-ui, sans-serif',
-                      color: 'var(--ink-700)',
+                      color: 'var(--ink-200)',
                       lineHeight: 1.7,
                     }}
                     initial={{ opacity: 0 }}

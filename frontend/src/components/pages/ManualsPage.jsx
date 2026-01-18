@@ -31,6 +31,7 @@ import {
 import { PageTransition, FadeIn, listContainerVariants, listItemVariants } from '../ui/PageTransition';
 import { PageHeader, Modal, Alert, EmptyState, ConfirmDialog, Badge, StatCard, LoadingSpinner } from '../ui/SharedComponents';
 import { getManuals, uploadManual, indexManual, deleteManual, toggleManualPin } from '../../services/api';
+import { fuzzySearch } from '../../utils/fuzzySearch';
 
 // Language display names with native script
 const LANGUAGE_DISPLAY = {
@@ -59,6 +60,7 @@ export default function ManualsPage() {
   const [dragOver, setDragOver] = useState(false);
   const [expandedManualId, setExpandedManualId] = useState(null);
   const [showAdaptedModal, setShowAdaptedModal] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   // Form state
@@ -191,6 +193,14 @@ export default function ManualsPage() {
     totalPages: manuals.reduce((sum, m) => sum + (m.total_pages || 0), 0),
   };
 
+  // Filter manuals based on search query
+  const filteredManuals = fuzzySearch(
+    manuals,
+    searchQuery,
+    ['title', 'filename', 'detected_language', 'adapted_summary', 'extracted_text'],
+    0.4 // Lower threshold for more lenient matching
+  );
+
   return (
     <PageTransition>
       <div className="page">
@@ -236,6 +246,40 @@ export default function ManualsPage() {
           </div>
         </FadeIn>
 
+        {/* Search Bar */}
+        {manuals.length > 0 && (
+          <FadeIn delay={0.15} className="mb-6">
+            <div className="relative max-w-md">
+              <Search 
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" 
+                style={{ color: 'var(--ink-400)' }}
+              />
+              <input
+                type="text"
+                placeholder="Search manuals by title, language, content..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10 pr-10"
+                style={{ backgroundColor: 'var(--paper-100)' }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-ink-100 rounded-full transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" style={{ color: 'var(--ink-400)' }} />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-sm mt-2" style={{ color: 'var(--ink-500)' }}>
+                Found {filteredManuals.length} {filteredManuals.length === 1 ? 'manual' : 'manuals'}
+              </p>
+            )}
+          </FadeIn>
+        )}
+
         {/* Content */}
         {loading ? (
           <div className="space-y-4">
@@ -269,7 +313,7 @@ export default function ManualsPage() {
             initial="hidden"
             animate="visible"
           >
-            {manuals.map((manual, index) => (
+            {filteredManuals.map((manual, index) => (
               <motion.div
                 key={manual.id}
                 variants={listItemVariants}
@@ -316,7 +360,7 @@ export default function ManualsPage() {
                       <File className="w-7 h-7" style={{ color: 'var(--ink-400)' }} />
                       <span 
                         className="text-[10px] mt-1 font-medium"
-                        style={{ color: 'var(--ink-500)' }}
+                        style={{ color: 'var(--ink-400)' }}
                       >
                         PDF
                       </span>
@@ -340,8 +384,8 @@ export default function ManualsPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 
-                      className="text-lg font-medium mb-1 truncate transition-colors group-hover:text-setu-700 flex items-center gap-2"
-                      style={{ color: 'var(--ink-800)' }}
+                      className="text-lg font-medium mb-1 truncate transition-colors group-hover:text-setu-400 flex items-center gap-2"
+                      style={{ color: 'var(--ink-100)' }}
                     >
                       {manual.title}
                       {manual.pinned && (
@@ -395,7 +439,7 @@ export default function ManualsPage() {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Sparkles className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
-                            <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                            <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
                               AI Adapted Content
                             </span>
                           </div>
@@ -415,7 +459,7 @@ export default function ManualsPage() {
                               <p 
                                 key={idx} 
                                 className="text-sm line-clamp-1 flex items-start gap-2"
-                                style={{ color: 'var(--ink-600)' }}
+                                style={{ color: 'var(--ink-300)' }}
                               >
                                 <span style={{ color: 'var(--setu-400)' }}>•</span>
                                 <span className="indic-text">{point}</span>
@@ -634,7 +678,7 @@ export default function ManualsPage() {
               {showAdaptedModal.detected_language && (
                 <div className="mb-4 flex items-center gap-2">
                   <Languages className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--ink-700)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
                     Content Language:
                   </span>
                   <Badge variant="primary">
@@ -646,7 +690,7 @@ export default function ManualsPage() {
               {/* Key Points Section */}
               {showAdaptedModal.key_points && showAdaptedModal.key_points.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-800)' }}>
+                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-100)' }}>
                     <BookMarked className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
                     Key Points / मुख्य बिंदु
                   </h4>
@@ -661,12 +705,12 @@ export default function ManualsPage() {
                           className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
                           style={{ 
                             backgroundColor: 'var(--setu-100)', 
-                            color: 'var(--setu-700)' 
+                            color: 'var(--setu-400)' 
                           }}
                         >
                           {idx + 1}
                         </span>
-                        <span className="text-sm indic-text leading-relaxed" style={{ color: 'var(--ink-700)' }}>
+                        <span className="text-sm indic-text leading-relaxed" style={{ color: 'var(--ink-300)' }}>
                           {point}
                         </span>
                       </li>
@@ -678,7 +722,7 @@ export default function ManualsPage() {
               {/* Full Summary Section */}
               {showAdaptedModal.adapted_summary && (
                 <div>
-                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-800)' }}>
+                  <h4 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-100)' }}>
                     <FileText className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
                     Complete AI Summary
                   </h4>
@@ -692,7 +736,7 @@ export default function ManualsPage() {
                     <pre 
                       className="whitespace-pre-wrap text-sm leading-relaxed indic-text"
                       style={{ 
-                        color: 'var(--ink-700)',
+                        color: 'var(--ink-300)',
                         fontFamily: 'inherit',
                       }}
                     >

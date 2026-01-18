@@ -497,7 +497,7 @@ export default function GeneratorPage() {
                     
                     <motion.h3 
                       className="text-lg font-medium mb-2"
-                      style={{ color: 'var(--ink-700)' }}
+                      style={{ color: 'var(--ink-200)' }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.3 }}
@@ -569,7 +569,7 @@ export default function GeneratorPage() {
                         </motion.div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-medium" style={{ color: 'var(--ink-800)' }}>
+                            <h3 className="text-lg font-medium" style={{ color: 'var(--ink-100)' }}>
                               {generatedModule.title}
                             </h3>
                             {generatedModule.language && generatedModule.language !== 'english' && (
@@ -680,7 +680,7 @@ export default function GeneratorPage() {
                           Learning Objective
                         </p>
                         <InkText delay={1.0}>
-                          <p className="text-sm" style={{ color: 'var(--success-800)' }}>
+                          <p className="text-sm" style={{ color: 'var(--success-400)' }}>
                             {generatedModule.learning_objective}
                           </p>
                         </InkText>

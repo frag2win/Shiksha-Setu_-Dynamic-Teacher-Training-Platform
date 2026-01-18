@@ -120,9 +120,9 @@ export default function CoverPage() {
   ];
 
   const accentColors = {
-    setu: { bg: 'var(--setu-50)', text: 'var(--setu-600)', border: 'var(--setu-200)', gradient: 'var(--gradient-setu)' },
-    warm: { bg: 'var(--warm-50)', text: 'var(--warm-600)', border: 'var(--warm-200)', gradient: 'var(--gradient-warm-spark)' },
-    teal: { bg: 'var(--teal-50)', text: 'var(--teal-600)', border: 'var(--teal-200)', gradient: 'var(--gradient-teal-spark)' },
+    setu: { bg: 'var(--setu-50)', text: 'var(--setu-500)', border: 'var(--setu-200)', gradient: 'var(--gradient-setu)' },
+    warm: { bg: 'var(--warm-50)', text: 'var(--warm-500)', border: 'var(--warm-200)', gradient: 'var(--gradient-warm-spark)' },
+    teal: { bg: 'var(--teal-50)', text: 'var(--teal-500)', border: 'var(--teal-200)', gradient: 'var(--gradient-teal-spark)' },
   };
 
   // Book opening animation variants
@@ -186,12 +186,12 @@ export default function CoverPage() {
             className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 relative"
             style={{ 
               background: 'linear-gradient(135deg, var(--setu-100) 0%, var(--setu-200) 100%)',
-              boxShadow: '0 4px 20px rgba(0, 66, 163, 0.15)'
+              boxShadow: '0 4px 30px rgba(96, 165, 250, 0.3)'
             }}
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <BookOpen className="w-10 h-10" style={{ color: 'var(--setu-600)' }} />
+            <BookOpen className="w-10 h-10" style={{ color: 'var(--setu-500)' }} />
             {/* Pulse ring */}
             <motion.div
               className="absolute inset-0 rounded-full"
@@ -205,7 +205,7 @@ export default function CoverPage() {
           <motion.h1 
             className="text-5xl md:text-6xl font-serif mb-4 tracking-tight"
             style={{ 
-              background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-700) 100%)',
+              background: 'linear-gradient(135deg, var(--ink-800) 0%, var(--setu-500) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -219,7 +219,7 @@ export default function CoverPage() {
           
           <motion.p 
             className="text-xl max-w-lg mx-auto mb-2" 
-            style={{ color: 'var(--warm-600)' }}
+            style={{ color: 'var(--warm-500)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}

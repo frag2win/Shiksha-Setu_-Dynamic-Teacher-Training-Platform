@@ -25,10 +25,13 @@ import {
   Landmark,
   Pin,
   PinOff,
+  Search,
+  X,
 } from 'lucide-react';
 import { PageTransition, FadeIn, listContainerVariants, listItemVariants } from '../ui/PageTransition';
 import { PageHeader, Modal, Alert, EmptyState, ConfirmDialog, Badge, LoadingSpinner } from '../ui/SharedComponents';
 import { getClusters, createCluster, updateCluster, deleteCluster, toggleClusterPin } from '../../services/api';
+import { fuzzySearch } from '../../utils/fuzzySearch';
 
 // Configuration data
 const REGION_TYPES = [
@@ -65,6 +68,7 @@ export default function ClustersPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -188,6 +192,14 @@ export default function ClustersPage() {
     return IconComponent;
   };
 
+  // Filter clusters based on search query
+  const filteredClusters = fuzzySearch(
+    clusters,
+    searchQuery,
+    ['name', 'geographic_type', 'primary_language', 'specific_challenges', 'infrastructure_level'],
+    0.4 // Lower threshold for more lenient matching
+  );
+
   return (
     <PageTransition>
       <div className="page">
@@ -221,14 +233,46 @@ export default function ClustersPage() {
               border: '1px solid var(--setu-200)',
             }}
           >
-            <p className="text-sm" style={{ color: 'var(--setu-700)' }}>
+            <p className="text-sm" style={{ color: 'var(--setu-400)' }}>
               <strong>What are Clusters?</strong> Clusters represent groups of schools with similar 
               characteristics—like language, region type, and infrastructure challenges. 
               The AI uses these profiles to adapt training content appropriately.
             </p>
           </div>
         </FadeIn>
-
+        {/* Search Bar */}
+        {clusters.length > 0 && (
+          <FadeIn delay={0.15} className="mb-6">
+            <div className="relative max-w-md">
+              <Search 
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" 
+                style={{ color: 'var(--ink-400)' }}
+              />
+              <input
+                type="text"
+                placeholder="Search clusters by name, region, language..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10 pr-10"
+                style={{ backgroundColor: 'var(--paper-100)' }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-ink-100 rounded-full transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" style={{ color: 'var(--ink-400)' }} />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-sm mt-2" style={{ color: 'var(--ink-500)' }}>
+                Found {filteredClusters.length} {filteredClusters.length === 1 ? 'cluster' : 'clusters'}
+              </p>
+            )}
+          </FadeIn>
+        )}
         {/* Content */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -260,7 +304,7 @@ export default function ClustersPage() {
             initial="hidden"
             animate="visible"
           >
-            {clusters.map((cluster) => {
+            {filteredClusters.map((cluster) => {
               const RegionIcon = getRegionIcon(cluster.geographic_type);
               return (
                 <motion.div
@@ -305,7 +349,7 @@ export default function ClustersPage() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-800)' }}>
+                    <h3 className="text-lg font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ink-100)' }}>
                       {cluster.name}
                       {cluster.pinned && (
                         <Pin className="w-4 h-4 fill-current" style={{ color: 'var(--setu-600)' }} />
@@ -341,7 +385,7 @@ export default function ClustersPage() {
                           <AlertTriangle className="w-3 h-3" />
                           Challenges
                         </div>
-                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-600)' }}>
+                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-300)' }}>
                           {cluster.specific_challenges}
                         </p>
                       </div>
@@ -353,7 +397,7 @@ export default function ClustersPage() {
                           <Settings className="w-3 h-3" />
                           Additional Notes
                         </div>
-                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-600)' }}>
+                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-300)' }}>
                           {cluster.additional_notes}
                         </p>
                       </div>
@@ -365,7 +409,7 @@ export default function ClustersPage() {
                     className="px-6 py-3"
                     style={{ 
                       borderTop: '1px solid var(--paper-200)',
-                      backgroundColor: 'rgba(251, 248, 241, 0.5)',
+                      backgroundColor: 'rgba(15, 23, 42, 0.5)',
                     }}
                   >
                     <p className="text-xs" style={{ color: 'var(--ink-400)' }}>

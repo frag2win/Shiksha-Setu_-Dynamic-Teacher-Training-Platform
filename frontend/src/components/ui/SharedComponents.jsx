@@ -27,7 +27,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'default', icon
           >
             <div className="modal-header">
               <h2 className="modal-title">
-                {Icon && <Icon className="w-5 h-5" style={{ color: 'var(--setu-600)' }} />}
+                {Icon && <Icon className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />}
                 {title}
               </h2>
               <button
@@ -158,7 +158,7 @@ export function ConfirmDialog({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} icon={AlertTriangle}>
       <div className="modal-body">
-        <p style={{ color: 'var(--ink-600)' }}>{message}</p>
+        <p style={{ color: 'var(--ink-400)' }}>{message}</p>
       </div>
       <div className="modal-footer">
         <button onClick={onClose} className="btn btn-secondary">
