@@ -130,6 +130,13 @@ export default function ClustersPage() {
     setSaving(true);
     setAlert(null);
 
+    // Validate cluster name has at least 2 characters
+    if (!formData.name || formData.name.trim().length < 2) {
+      setAlert({ type: 'error', message: 'Cluster name must be at least 2 characters long' });
+      setSaving(false);
+      return;
+    }
+
     try {
       if (editingCluster) {
         await updateCluster(editingCluster.id, formData);
@@ -409,9 +416,10 @@ export default function ClustersPage() {
                   placeholder="e.g., Tribal Belt Schools - Gadchiroli"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  minLength={2}
                   required
                 />
-                <p className="form-hint">A descriptive name for this group of schools</p>
+                <p className="form-hint">A descriptive name for this group of schools (minimum 2 characters)</p>
               </div>
 
               {/* Region and Language */}

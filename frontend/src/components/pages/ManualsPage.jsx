@@ -107,6 +107,12 @@ export default function ManualsPage() {
       return;
     }
 
+    // Validate manual title has at least 2 characters
+    if (uploadTitle.trim().length < 2) {
+      setAlert({ type: 'error', message: 'Manual title must be at least 2 characters long' });
+      return;
+    }
+
     setUploading(true);
     setAlert(null);
 
@@ -508,9 +514,10 @@ export default function ManualsPage() {
                   placeholder="e.g., NCF 2023 Teacher Training Manual"
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
+                  minLength={2}
                   required
                 />
-                <p className="form-hint">A descriptive title for this training manual</p>
+                <p className="form-hint">A descriptive title for this training manual (minimum 2 characters)</p>
               </div>
 
               {/* File Upload Zone */}

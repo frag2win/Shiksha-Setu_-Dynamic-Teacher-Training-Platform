@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class ClusterBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
+    name: str = Field(..., min_length=2, max_length=100, description="Cluster name must be at least 2 characters")
     region_type: str = Field(..., description="Urban, Rural, Tribal, etc.")
     language: str = Field(..., min_length=1, max_length=50)
     infrastructure_constraints: Optional[str] = Field(None, description="High, Medium, Low")
@@ -14,7 +14,7 @@ class ClusterCreate(ClusterBase):
     pass
 
 class ClusterUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    name: Optional[str] = Field(None, min_length=2, max_length=100, description="Cluster name must be at least 2 characters")
     region_type: Optional[str] = None
     language: Optional[str] = None
     infrastructure_constraints: Optional[str] = None
@@ -31,7 +31,7 @@ class ClusterResponse(ClusterBase):
         from_attributes = True
 
 class ManualBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200)
+    title: str = Field(..., min_length=2, max_length=200, description="Manual title must be at least 2 characters")
 
 class ManualCreate(ManualBase):
     filename: str
