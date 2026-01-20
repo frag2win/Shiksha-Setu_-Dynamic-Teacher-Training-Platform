@@ -26,7 +26,7 @@ def get_password_hash(password: str) -> str:
     return hashed.decode('utf-8')
 
 
-def init_test_users():
+def init_test_users(force_reset=False):
     """Initialize test users and schools"""
     print("Initializing database...")
     init_db()
@@ -36,11 +36,18 @@ def init_test_users():
     try:
         # Check if users already exist
         existing_users = db.query(User).count()
-        if existing_users > 0:
+        if existing_users > 0 and not force_reset:
             print(f"Users already exist ({existing_users} users found). Skipping initialization.")
             return
         
-        print("Creating test schools...")
+        if force_reset and existing_users > 0:
+            print(f"Force reset: Deleting {existing_users} existing users...")
+            db.query(User).delete()
+            db.query(School).delete()
+            db.commit()
+            print("✓ Existing data deleted")
+        
+        print("\nCreating test schools...")
         
         # Create test schools
         school1 = School(
@@ -184,4 +191,6 @@ def init_test_users():
 
 
 if __name__ == "__main__":
-    init_test_users()
+    import sys
+    force = '--force' in sys.argv or '-f' in sys.argv
+    init_test_users(force_reset=force)

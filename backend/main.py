@@ -51,6 +51,7 @@ from api import clusters_router, manuals_router, modules_router, translation_rou
 from api.auth import router as auth_router
 from api.admin import router as admin_router
 from api.schools import router as schools_router
+from api.intelligence import router as intelligence_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -122,6 +123,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(schools_router, prefix="/api")
+app.include_router(intelligence_router)  # Decision Intelligence API
 app.include_router(clusters_router)
 app.include_router(manuals_router)
 app.include_router(modules_router)

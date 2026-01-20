@@ -313,12 +313,12 @@ export default function LibraryPage() {
                         <div className="flex-1">
                           <motion.h3 
                             className="text-lg font-medium mb-1 transition-colors"
-                            style={{ color: 'var(--ink-100)' }}
+                            style={{ color: 'var(--ink-900)' }}
                             whileHover={{ color: 'var(--setu-400)' }}
                           >
                             {module.title}
                           </motion.h3>
-                          <div className="flex flex-wrap gap-3 text-sm" style={{ color: 'var(--ink-400)' }}>
+                          <div className="flex flex-wrap gap-3 text-sm" style={{ color: 'var(--ink-600)' }}>
                             <span className="flex items-center gap-1">
                               <Building2 className="w-4 h-4" style={{ color: 'var(--setu-500)' }} />
                               {getClusterName(module.cluster_id)}
@@ -333,7 +333,7 @@ export default function LibraryPage() {
 
                       {/* Date and status row */}
                       <div className="flex items-center justify-between mb-3">
-                        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--ink-400)' }}>
+                        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--ink-600)' }}>
                           <Calendar className="w-3 h-3" />
                           {new Date(module.created_at).toLocaleDateString()}
                         </span>
@@ -352,7 +352,7 @@ export default function LibraryPage() {
 
                       {/* Preview with fade */}
                       <div className="relative">
-                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-400)' }}>
+                        <p className="text-sm line-clamp-2" style={{ color: 'var(--ink-600)' }}>
                           {module.adapted_content?.substring(0, 150)}...
                         </p>
                         <div 

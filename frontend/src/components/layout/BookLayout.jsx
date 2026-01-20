@@ -25,6 +25,10 @@ import {
 import { checkHealth } from '../../services/api';
 import * as api from '../../services/api';
 import { useTheme } from '../../contexts/ThemeContext';
+// import UserProfile from '../ui/UserProfile';
+import toast, { Toaster } from 'react-hot-toast';
+// import { KeyboardShortcutsButton } from '../ui/KeyboardShortcuts';
+// import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 
 const navigation = [
   { path: '/', label: 'Cover', icon: BookOpen, pageNum: null, accent: 'setu' },
@@ -35,7 +39,7 @@ const navigation = [
   { path: '/translate', label: 'Translate', icon: Languages, pageNum: '5', accent: 'indigo' },
 ];
 
-export default function BookLayout({ children }) {
+export default function BookLayout({ children, user, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [apiStatus, setApiStatus] = useState('checking');
@@ -61,11 +65,6 @@ export default function BookLayout({ children }) {
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
-
-  const handleLogout = () => {
-    api.auth.logout();
-    window.location.href = '/login';
-  };
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: 'var(--paper-200)' }}>
@@ -265,7 +264,7 @@ export default function BookLayout({ children }) {
             
             {/* Logout Button */}
             <button
-              onClick={handleLogout}
+              onClick={onLogout}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-opacity-50"
               style={{ 
                 backgroundColor: 'transparent',
@@ -281,6 +280,33 @@ export default function BookLayout({ children }) {
 
       {/* Main content - offset for fixed sidebar */}
       <main className="flex-1 min-w-0 lg:ml-64">
+        {/* Toast Notifications */}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: 'var(--paper-50)',
+              color: 'var(--ink-700)',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            },
+            success: {
+              iconTheme: {
+                primary: 'var(--success-500)',
+                secondary: 'white',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: 'var(--danger-500)',
+                secondary: 'white',
+              },
+            },
+          }}
+        />
+        
         {/* Mobile header with glass effect */}
         <header 
           className="lg:hidden sticky top-0 z-30 px-4 py-3 backdrop-blur-md"
@@ -309,29 +335,29 @@ export default function BookLayout({ children }) {
             >
               Shiksha-Setu
             </h1>
-            {/* Mobile Theme Toggle */}
-            <motion.button
-              onClick={toggleTheme}
-              className="btn btn-ghost btn-icon"
-              aria-label="Toggle theme"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {isDark ? (
-                <Sun className="w-5 h-5" style={{ color: 'var(--warm-500)' }} />
-              ) : (
-                <Moon className="w-5 h-5" style={{ color: 'var(--setu-500)' }} />
-              )}
-            </motion.button>
           </div>
         </header>
 
+        {/* Desktop header with user profile */}
+        <header 
+          className="hidden lg:flex sticky top-0 z-30 px-6 py-3 backdrop-blur-md items-center justify-end"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            borderBottom: '1px solid var(--border-color)',
+          }}
+        >
+          {/* {user && <UserProfile user={user} onLogout={onLogout} />} */}
+        </header>
+        
         {/* Page content with smooth transitions */}
         <div className="book-container">
           <AnimatePresence mode="wait">
             {children}
           </AnimatePresence>
         </div>
+
+        {/* Keyboard Shortcuts Button */}
+        {/* <KeyboardShortcutsButton /> */}
       </main>
     </div>
   );

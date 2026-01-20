@@ -29,9 +29,11 @@ import {
   X,
 } from 'lucide-react';
 import { PageTransition, FadeIn, listContainerVariants, listItemVariants } from '../ui/PageTransition';
-import { PageHeader, Modal, Alert, EmptyState, ConfirmDialog, Badge, LoadingSpinner } from '../ui/SharedComponents';
+import { PageHeader, Modal, Alert, EmptyState, Badge, LoadingSpinner } from '../ui/SharedComponents';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { getClusters, createCluster, updateCluster, deleteCluster, toggleClusterPin } from '../../services/api';
 import { fuzzySearch } from '../../utils/fuzzySearch';
+import toast from 'react-hot-toast';
 
 // Configuration data
 const REGION_TYPES = [
@@ -137,7 +139,7 @@ export default function ClustersPage() {
 
     // Validate cluster name has at least 2 characters
     if (!formData.name || formData.name.trim().length < 2) {
-      setAlert({ type: 'error', message: 'Cluster name must be at least 2 characters long' });
+      toast.error('Cluster name must be at least 2 characters long');
       setSaving(false);
       return;
     }
@@ -145,16 +147,16 @@ export default function ClustersPage() {
     try {
       if (editingCluster) {
         await updateCluster(editingCluster.id, formData);
-        setAlert({ type: 'success', message: 'Cluster updated successfully!' });
+        toast.success('Cluster updated successfully!');
       } else {
         await createCluster(formData);
-        setAlert({ type: 'success', message: 'Cluster created successfully!' });
+        toast.success('Cluster created successfully!');
       }
       setShowModal(false);
       resetForm();
       loadClusters();
     } catch (error) {
-      setAlert({ type: 'error', message: error.message || 'Failed to save cluster' });
+      toast.error(error.message || 'Failed to save cluster');
     } finally {
       setSaving(false);
     }
@@ -165,10 +167,10 @@ export default function ClustersPage() {
 
     try {
       await deleteCluster(deleteConfirm.id);
-      setAlert({ type: 'success', message: 'Cluster deleted successfully!' });
+      toast.success('Cluster deleted successfully!');
       loadClusters();
     } catch (error) {
-      setAlert({ type: 'error', message: error.message || 'Failed to delete cluster' });
+      toast.error(error.message || 'Failed to delete cluster');
     } finally {
       setDeleteConfirm(null);
     }
@@ -209,7 +211,11 @@ export default function ClustersPage() {
           subtitle="Define unique school clusters with specific constraints and teaching contexts"
           pageNumber="1"
           action={
-            <button onClick={openCreateModal} className="btn btn-primary">
+            <button 
+              onClick={openCreateModal} 
+              className="btn btn-primary"
+              aria-label="Create new cluster"
+            >
               <Plus className="w-4 h-4" />
               Create Cluster
             </button>

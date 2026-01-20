@@ -55,7 +55,7 @@ Your task is to adapt THE EXACT TOPIC from the source material to the specific c
         cluster_profile: Dict,
         topic: str
     ) -> str:
-        """Build the complete context prompt for adaptation"""
+        """Build the complete context prompt for adaptation with 7-component structure"""
         
         prompt = f"""==== ORIGINAL TRAINING MANUAL CONTENT ====
 Topic: {topic}
@@ -81,28 +81,35 @@ CRITICAL REQUIREMENTS:
 4. Use examples familiar to the cluster's context
 5. If the source mentions specific techniques/concepts, INCLUDE them in adapted form
 
-STRUCTURE YOUR OUTPUT:
-**Title:** [Same topic as source]
-**Learning Objective:** [What the source material teaches]
-**Cluster Context:** [Brief summary of constraints]
-**Adapted Teaching Module:**
+MANDATORY 7-COMPONENT STRUCTURE:
+You MUST structure your output with these exact 7 components aligned with NEP 2020:
 
-1. Core Concept (from source material):
-   [Explain the main concept from the source]
+**1. Classroom Challenge**
+[Describe the specific classroom problem this training addresses. Be concrete and relatable to the cluster's context]
 
-2. Why It Matters for This Cluster:
-   [Connect to their specific needs]
+**2. Why This Matters**
+[Explain the pedagogical importance and real-world impact. Connect to NEP 2020 goals and student learning outcomes]
 
-3. Practical Application:
-   [How to teach this with available resources]
+**3. Suggested Teaching Approach**
+[Provide the core teaching strategy from the source material, adapted for this cluster's constraints]
 
-4. Low-Resource Activity:
-   [Hands-on activity using local resources]
+**4. Low-Resource Activity**
+[Give a specific, step-by-step activity that requires minimal/zero cost materials and works with the infrastructure level]
 
-5. Expected Outcomes:
-   [What teachers should understand/be able to do]
+**5. Expected Student Response**
+[Describe what successful learning looks like - observable student behaviors/outputs that indicate understanding]
 
-Remember: Stay true to the SOURCE MATERIAL'S topic and concepts. Only adapt the delivery method."""
+**6. Classroom Signals**
+[List 3-4 specific indicators teachers should watch for to gauge if the approach is working or needs adjustment]
+
+**7. Teacher Feedback Prompt**
+[End with a specific question for teachers to reflect on after trying this approach in their classroom]
+
+Remember: 
+- Stay true to the SOURCE MATERIAL'S topic and concepts
+- Only adapt the delivery method
+- Be specific and actionable
+- Keep language simple and practical"""
         
         return prompt
     

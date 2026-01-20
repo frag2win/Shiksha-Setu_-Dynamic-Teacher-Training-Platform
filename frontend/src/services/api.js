@@ -247,15 +247,28 @@ export const getDashboardStats = async () => {
   };
 };
 
+// ================== DECISION INTELLIGENCE ==================
+export const analyzeCluster = (clusterId) => apiClient.get(`/api/intelligence/analyze/cluster/${clusterId}`);
+export const analyzeAllClusters = () => apiClient.get('/api/intelligence/analyze/all');
+export const getMacroInsights = () => apiClient.get('/api/intelligence/insights/macro');
+export const getRecommendations = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiClient.get(`/api/intelligence/recommendations${query ? `?${query}` : ''}`);
+};
+export const updateRecommendationStatus = (id, status) => 
+  apiClient.patch(`/api/intelligence/recommendations/${id}/status?status=${status}`);
+export const deleteRecommendation = (id) => apiClient.delete(`/api/intelligence/recommendations/${id}`);
+
+// ================== EXPORTS ==================
 // Default export for backward compatibility
 const api = {
   checkHealth,
   auth,
   admin,
   schools,
+  createCluster,
   getClusters,
   getCluster,
-  createCluster,
   updateCluster,
   deleteCluster,
   toggleClusterPin,
@@ -273,7 +286,17 @@ const api = {
   submitFeedback,
   translate,
   batchTranslate,
+  exportModulePDF,
+  downloadPDF,
   getDashboardStats,
+  // Decision Intelligence
+  analyzeCluster,
+  analyzeAllClusters,
+  getMacroInsights,
+  getRecommendations,
+  updateRecommendationStatus,
+  deleteRecommendation,
 };
 
 export default api;
+

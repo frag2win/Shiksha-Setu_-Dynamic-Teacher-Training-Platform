@@ -3,8 +3,17 @@ ChromaDB Vector Store for RAG with proper text handling
 Compatible with Python 3.13+ and fixes binary/hex output issues
 """
 
-import chromadb
-from chromadb.config import Settings
+try:
+    import chromadb
+    from chromadb.config import Settings
+    CHROMADB_AVAILABLE = True
+except ImportError as e:
+    chromadb = None
+    Settings = None
+    CHROMADB_AVAILABLE = False
+    print(f"⚠️ ChromaDB not available: {e}")
+    print("RAG functionality will be limited. Install chromadb with Python 3.10-3.12 for full functionality.")
+
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import logging
@@ -24,6 +33,12 @@ class ChromaVectorStore:
         Args:
             persist_directory: Directory to persist ChromaDB data
         """
+        if not CHROMADB_AVAILABLE:
+            logger.warning("ChromaDB not available - RAG functionality disabled")
+            self.client = None
+            self.collection = None
+            return
+            
         self.persist_directory = Path(persist_directory)
         self.persist_directory.mkdir(parents=True, exist_ok=True)
         
@@ -54,6 +69,10 @@ class ChromaVectorStore:
             metadatas: List of metadata dictionaries
             ids: List of document IDs
         """
+        if not CHROMADB_AVAILABLE or not self.collection:
+            logger.warning("ChromaDB not available - skipping document addition")
+            return
+            
         logger.info(f"Adding {len(texts)} documents to ChromaDB...")
         
         # Clean and ensure proper text encoding (fixes binary/hex issues)
@@ -91,6 +110,10 @@ class ChromaVectorStore:
         Returns:
             Dictionary with documents, metadatas, and distances
         """
+        if not CHROMADB_AVAILABLE or not self.collection:
+            logger.warning("ChromaDB not available - returning empty search results")
+            return {'documents': [[]], 'metadatas': [[]], 'distances': [[]]}
+            
         if self.collection.count() == 0:
             return {'documents': [[]], 'metadatas': [[]], 'distances': [[]]}
         

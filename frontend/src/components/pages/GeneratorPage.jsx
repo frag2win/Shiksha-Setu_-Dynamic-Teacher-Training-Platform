@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { PageTransition, FadeIn, InkReveal } from '../ui/PageTransition';
 import { PageHeader, Alert, LoadingSpinner } from '../ui/SharedComponents';
+import ProgressIndicator from '../ui/ProgressIndicator';
+import toast from 'react-hot-toast';
 import { getClusters, getManuals, generateModule, getSupportedLanguages } from '../../services/api';
 
 // Ink drop animation component
@@ -131,6 +133,8 @@ export default function GeneratorPage() {
   const [languages, setLanguages] = useState({});
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationMessage, setGenerationMessage] = useState('');
   const [generatedModule, setGeneratedModule] = useState(null);
   const [alert, setAlert] = useState(null);
   const [showYoutubeSuggestions, setShowYoutubeSuggestions] = useState(false);
@@ -224,30 +228,55 @@ export default function GeneratorPage() {
     const topic = (formData.topic || '').trim();
 
     if (!formData.manual_id || !formData.cluster_id || !topic) {
-      setAlert({ type: 'error', message: 'Please fill in all required fields' });
+      toast.error('Please fill in all required fields');
       return;
     }
 
     if (topic.length < 2) {
-      setAlert({ type: 'error', message: 'Topic must be at least 2 characters' });
+      toast.error('Topic must be at least 2 characters');
       return;
     }
 
     setGenerating(true);
     setAlert(null);
     setGeneratedModule(null);
+    setGenerationProgress(0);
+    setGenerationMessage('Initializing AI generation...');
+
+    // Simulate progress stages
+    const progressStages = [
+      { progress: 20, message: 'Analyzing manual content...' },
+      { progress: 40, message: 'Understanding cluster context...' },
+      { progress: 60, message: 'Generating adapted content...' },
+      { progress: 80, message: 'Finalizing module...' },
+      { progress: 95, message: 'Almost done...' }
+    ];
+
+    let stageIndex = 0;
+    const progressInterval = setInterval(() => {
+      if (stageIndex < progressStages.length) {
+        const stage = progressStages[stageIndex];
+        setGenerationProgress(stage.progress);
+        setGenerationMessage(stage.message);
+        stageIndex++;
+      }
+    }, 1500);
 
     try {
       const result = await generateModule(formData);
+      clearInterval(progressInterval);
+      setGenerationProgress(100);
+      setGenerationMessage('Complete!');
       setGeneratedModule(result);
-      setAlert({ type: 'success', message: 'Module generated successfully!' });
+      toast.success('Module generated successfully!');
     } catch (error) {
-      setAlert({
-        type: 'error',
-        message: error.message || 'Generation failed. Make sure you have a valid GROQ API key.',
-      });
+      clearInterval(progressInterval);
+      toast.error(error.message || 'Generation failed. Make sure you have a valid GROQ API key.');
     } finally {
-      setGenerating(false);
+      setTimeout(() => {
+        setGenerating(false);
+        setGenerationProgress(0);
+      }, 500);
     }
   };
 
@@ -509,7 +538,7 @@ export default function GeneratorPage() {
             <FadeIn delay={0.1}>
               {generating ? (
                 <motion.div 
-                  className="card min-h-[500px] flex items-center justify-center relative overflow-hidden"
+                  className="card min-h-[500px] flex items-center justify-center relative overflow-hidden p-8"
                   style={{ background: 'var(--gradient-paper)' }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -525,8 +554,16 @@ export default function GeneratorPage() {
                     ))}
                   </div>
                   
-                  <div className="text-center relative z-10">
+                  <div className="text-center relative z-10 w-full max-w-md">
                     <WritingAnimation />
+                    
+                    {/* Progress Indicator */}
+                    <div className="mb-6">
+                      <ProgressIndicator 
+                        progress={generationProgress} 
+                        message={generationMessage}
+                      />
+                    </div>
                     
                     <motion.h3 
                       className="text-lg font-medium mb-2"

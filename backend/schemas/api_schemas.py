@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class ClusterBase(BaseModel):
@@ -98,10 +98,12 @@ class FeedbackBase(BaseModel):
     module_id: int
     rating: int = Field(..., ge=1, le=5, description="Rating from 1-5")
     comment: Optional[str] = None
+    tags: Optional[List[str]] = Field(None, description="Issue tags: not_practical, too_complex, needs_resources, language_barrier, time_constraint")
 
 class FeedbackCreate(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 class FeedbackResponse(FeedbackBase):
     id: int

@@ -385,14 +385,14 @@ export default function ManualsPage() {
                   <div className="flex-1 min-w-0">
                     <h3 
                       className="text-lg font-medium mb-1 truncate transition-colors group-hover:text-setu-400 flex items-center gap-2"
-                      style={{ color: 'var(--ink-100)' }}
+                      style={{ color: 'var(--ink-900)' }}
                     >
                       {manual.title}
                       {manual.pinned && (
                         <Pin className="w-4 h-4 fill-current flex-shrink-0" style={{ color: 'var(--setu-600)' }} />
                       )}
                     </h3>
-                    <p className="text-sm truncate mb-3" style={{ color: 'var(--ink-400)' }}>
+                    <p className="text-sm truncate mb-3" style={{ color: 'var(--ink-600)' }}>
                       {manual.filename}
                     </p>
 

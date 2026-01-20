@@ -21,6 +21,7 @@ import {
 import { PageTransition, FadeIn } from '../ui/PageTransition';
 import { Alert, LoadingSpinner } from '../ui/SharedComponents';
 import { translate } from '../../services/api';
+import toast from 'react-hot-toast';
 
 // Supported languages (Indian + English) with speech recognition codes
 const LANGUAGES = [
@@ -209,8 +210,10 @@ export default function TranslationPage() {
     try {
       await navigator.clipboard.writeText(translatedText);
       setCopied(true);
+      toast.success('Copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
+      toast.error('Failed to copy text');
       console.error('Copy failed:', err);
     }
   };
@@ -237,8 +240,8 @@ export default function TranslationPage() {
               <Languages className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--ink-400)' }}>Page 5</p>
-              <h1 className="text-xl font-serif" style={{ color: 'var(--ink-100)' }}>
+              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--ink-600)' }}>Page 5</p>
+              <h1 className="text-xl font-serif" style={{ color: 'var(--ink-900)' }}>
                 Translation
               </h1>
             </div>
@@ -336,10 +339,10 @@ export default function TranslationPage() {
                 style={{ borderBottom: '1px solid var(--paper-200)' }}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-900)' }}>
                     {sourceLang?.native}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
+                  <span className="text-xs" style={{ color: 'var(--ink-600)' }}>
                     ({sourceLang?.name})
                   </span>
                 </div>
@@ -378,6 +381,7 @@ export default function TranslationPage() {
                   onChange={(e) => setSourceText(e.target.value)}
                   placeholder={`Enter ${sourceLang?.name} text to translate...\n\nPaste your training content, lesson text, or instructions here.`}
                   className="w-full h-48 p-4 resize-none border-0 focus:outline-none focus:ring-0"
+                  aria-label="Source text to translate"
                   style={{ 
                     backgroundColor: 'transparent',
                     color: 'var(--ink-200)',
@@ -416,7 +420,7 @@ export default function TranslationPage() {
                   backgroundColor: 'var(--paper-100)',
                 }}
               >
-                <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
+                <span className="text-xs" style={{ color: 'var(--ink-600)' }}>
                   {sourceText.length} characters
                 </span>
                 <button
@@ -450,10 +454,10 @@ export default function TranslationPage() {
               >
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" style={{ color: 'var(--teal-600)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--ink-200)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--ink-900)' }}>
                     {targetLang?.native}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
+                  <span className="text-xs" style={{ color: 'var(--ink-600)' }}>
                     ({targetLang?.name})
                   </span>
                 </div>
@@ -486,7 +490,7 @@ export default function TranslationPage() {
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
                       <LoadingSpinner />
-                      <p className="mt-2 text-sm" style={{ color: 'var(--ink-400)' }}>
+                      <p className="mt-2 text-sm" style={{ color: 'var(--ink-600)' }}>
                         Translating to {targetLang?.native}...
                       </p>
                     </div>
@@ -508,7 +512,7 @@ export default function TranslationPage() {
                 ) : (
                   <div 
                     className="h-full flex items-center justify-center text-center"
-                    style={{ color: 'var(--ink-300)' }}
+                    style={{ color: 'var(--ink-600)' }}
                   >
                     <div>
                       <Languages className="w-10 h-10 mx-auto mb-2 opacity-40" />
@@ -529,7 +533,7 @@ export default function TranslationPage() {
                   backgroundColor: 'rgba(240, 253, 250, 0.5)',
                 }}
               >
-                <span className="text-xs" style={{ color: 'var(--ink-400)' }}>
+                <span className="text-xs" style={{ color: 'var(--ink-600)' }}>
                   {translatedText.length} characters
                 </span>
               </div>
@@ -570,8 +574,8 @@ export default function TranslationPage() {
               border: '1px solid var(--paper-300)',
             }}
           >
-            <p className="text-xs" style={{ color: 'var(--ink-500)' }}>
-              <strong>Translation:</strong> Powered by Google Translate API. Supports 12 languages including 
+            <p className="text-xs" style={{ color: 'var(--ink-700)' }}>
+              <strong>Translation:</strong> Powered by IndicTrans2 AI. Supports 12 Indian languages including 
               English and 11 major Indian languages. Translate in any direction—Hindi to Tamil, Bengali to 
               Gujarati, or English to any regional language.
             </p>

@@ -204,7 +204,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         {user && user.role === 'teacher' ? (
-          <BookLayout>
+          <BookLayout user={user} onLogout={handleLogout}>
             <AnimatedRoutes user={user} onLogout={handleLogout} onLoginSuccess={handleLoginSuccess} />
           </BookLayout>
         ) : (
@@ -216,3 +216,4 @@ function App() {
 }
 
 export default App;
+

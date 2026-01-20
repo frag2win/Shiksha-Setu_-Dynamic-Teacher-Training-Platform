@@ -274,7 +274,7 @@ async def submit_feedback(
     feedback: FeedbackCreate,
     db: Session = Depends(get_db)
 ):
-    """Submit feedback for a module"""
+    """Submit feedback for a module with optional tags"""
     
     # Verify module exists
     module = db.query(Module).filter(Module.id == module_id).first()
@@ -284,8 +284,13 @@ async def submit_feedback(
             detail=f"Module with ID {module_id} not found"
         )
     
+    # Convert tags list to JSON string for storage
+    feedback_data = feedback.model_dump()
+    if feedback_data.get('tags'):
+        feedback_data['tags'] = json.dumps(feedback_data['tags'])
+    
     from models.database_models import Feedback
-    db_feedback = Feedback(**feedback.model_dump())
+    db_feedback = Feedback(**feedback_data)
     db.add(db_feedback)
     db.commit()
     db.refresh(db_feedback)
