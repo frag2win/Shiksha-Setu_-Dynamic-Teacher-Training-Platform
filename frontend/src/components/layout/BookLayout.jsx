@@ -21,6 +21,7 @@ import {
   Settings,
   Sun,
   Moon,
+  Target,
 } from 'lucide-react';
 import { checkHealth } from '../../services/api';
 import * as api from '../../services/api';
@@ -37,6 +38,7 @@ const navigation = [
   { path: '/generate', label: 'Generate', icon: Sparkles, pageNum: '3', accent: 'teal' },
   { path: '/library', label: 'Library', icon: Library, pageNum: '4', accent: 'success' },
   { path: '/translate', label: 'Translate', icon: Languages, pageNum: '5', accent: 'indigo' },
+  { path: '/competency', label: 'My Skills', icon: Target, pageNum: '6', accent: 'purple' },
 ];
 
 export default function BookLayout({ children, user, onLogout }) {

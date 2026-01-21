@@ -259,6 +259,25 @@ export const updateRecommendationStatus = (id, status) =>
   apiClient.patch(`/api/intelligence/recommendations/${id}/status?status=${status}`);
 export const deleteRecommendation = (id) => apiClient.delete(`/api/intelligence/recommendations/${id}`);
 
+// ================== COMPETENCY ANALYSIS ==================
+export const getCompetencyAnalysis = () => apiClient.get('/api/competencies/analysis');
+export const getTeacherCompetencyAnalysis = (userId) => apiClient.get(`/api/competencies/analysis/${userId}`);
+export const startModule = (moduleId) => apiClient.post(`/api/competencies/modules/${moduleId}/start`);
+export const completeModule = (moduleId, data) => apiClient.post(`/api/competencies/modules/${moduleId}/complete`, data);
+export const getPersonalizedRecommendations = (limit = 10) => 
+  apiClient.get(`/api/competencies/recommendations?limit=${limit}`);
+export const getCompetencyLeaderboard = (competencyArea = null, limit = 10) => {
+  const params = new URLSearchParams({ limit });
+  if (competencyArea) params.append('competency_area', competencyArea);
+  return apiClient.get(`/api/competencies/leaderboard?${params.toString()}`);
+};
+export const getCompetencyProgress = () => apiClient.get('/api/competencies/progress');
+export const getCompetencyAreas = () => apiClient.get('/api/competencies/areas');
+export const getModuleCompletions = (statusFilter = null) => {
+  const params = statusFilter ? `?status_filter=${statusFilter}` : '';
+  return apiClient.get(`/api/competencies/completions${params}`);
+};
+
 // ================== EXPORTS ==================
 // Default export for backward compatibility
 const api = {

@@ -128,6 +128,36 @@ async def get_current_user(
     return user
 
 
+async def require_teacher(current_user: User = Depends(get_current_user)) -> User:
+    """Require user to be a teacher"""
+    if current_user.role != UserRole.TEACHER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint requires teacher role"
+        )
+    return current_user
+
+
+async def require_principal(current_user: User = Depends(get_current_user)) -> User:
+    """Require user to be a principal"""
+    if current_user.role != UserRole.PRINCIPAL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint requires principal role"
+        )
+    return current_user
+
+
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Require user to be an admin"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint requires admin role"
+        )
+    return current_user
+
+
 @router.post("/login", response_model=LoginResponse)
 async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     """

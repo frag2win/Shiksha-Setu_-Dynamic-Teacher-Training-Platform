@@ -23,6 +23,7 @@ const AdminManualsPage = lazy(() => import('./components/pages/AdminManualsPage'
 const GeneratorPage = lazy(() => import('./components/pages/GeneratorPage'));
 const LibraryPage = lazy(() => import('./components/pages/LibraryPage'));
 const TranslationPage = lazy(() => import('./components/pages/TranslationPage'));
+const CompetencyDashboard = lazy(() => import('./components/pages/CompetencyDashboard'));
 
 // Page loading fallback
 function PageLoader() {
@@ -180,6 +181,16 @@ function AnimatedRoutes({ user, onLogout, onLoginSuccess }) {
               <ProtectedRoute allowedRoles={['teacher', 'principal']}>
                 <BookLayout user={user} onLogout={onLogout}>
                   <TranslationPage />
+                </BookLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/competency" 
+            element={
+              <ProtectedRoute allowedRoles={['teacher', 'principal', 'admin']}>
+                <BookLayout user={user} onLogout={onLogout}>
+                  <CompetencyDashboard />
                 </BookLayout>
               </ProtectedRoute>
             } 
