@@ -23,11 +23,11 @@ wheels/
 # Virtual Environment
 venv/
 ENV/
-env/
+
 .venv
 
 # Environment Variables
-.env
+
 .env.local
 
 # IDE
