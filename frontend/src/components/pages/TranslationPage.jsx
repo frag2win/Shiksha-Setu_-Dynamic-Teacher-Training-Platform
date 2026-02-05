@@ -384,7 +384,7 @@ export default function TranslationPage() {
                   aria-label="Source text to translate"
                   style={{ 
                     backgroundColor: 'transparent',
-                    color: 'var(--ink-200)',
+                    color: 'var(--ink-900)',
                   }}
                 />
 
@@ -500,7 +500,7 @@ export default function TranslationPage() {
                     className="prose-content"
                     style={{ 
                       fontFamily: 'system-ui, sans-serif',
-                      color: 'var(--ink-200)',
+                      color: 'var(--ink-900)',
                       lineHeight: 1.7,
                     }}
                     initial={{ opacity: 0 }}

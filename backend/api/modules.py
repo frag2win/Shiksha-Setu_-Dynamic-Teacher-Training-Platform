@@ -208,11 +208,12 @@ async def approve_module(
     )
 
     # Step 4: Create a new ExportedPDF record for this approval event
+    # PDF expires after 30 days
     pdf_record = ExportedPDF(
         module_id=module.id,
         filename=pdf_result["filename"],
         file_path=pdf_result["file_path"],
-        language=module.language,
+        expires_at=datetime.utcnow() + timedelta(days=30),
     )
     db.add(pdf_record)
 

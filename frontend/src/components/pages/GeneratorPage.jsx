@@ -258,27 +258,27 @@ export default function GeneratorPage() {
   const youtubeSuggestions = [
     {
       title: 'Effective Teaching Strategies for Rural Areas',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://youtu.be/SSKVgrwhzus?si=gGvX9TXdxooY-k9b',
       category: 'Teaching Methods'
     },
     {
       title: 'Using Technology in Low-Resource Classrooms',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://youtu.be/7mz73uXD9DA?si=M-Zk9YNvbidCDYaR',
       category: 'Technology'
     },
     {
       title: 'Cultural Sensitivity in Teaching',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://youtu.be/yE6tIle64tU?si=-oNjjpwl87FGyg-U',
       category: 'Cultural Awareness'
     },
     {
       title: 'Interactive Learning Activities',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://youtu.be/YRnjGeQbsHQ?si=FwMss9oRmzHurOXI',
       category: 'Engagement'
     },
     {
       title: 'Classroom Management Tips',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://youtu.be/7S_tz1z_5bA?si=1IvpGxWNpcn66r7k',
       category: 'Management'
     },
   ];
